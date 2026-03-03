@@ -6,42 +6,69 @@ const auth = require("../middleware/customerAuth");
 
 
 // ADD TO CART
+router.post("/add", async (req, res) => {
+  try {
+    const { productId, quantity, user } = req.body;
 
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ msg: "Product not found" });
+    }
 
-router.post("/add",  async (req, res) => {
-  const { productId, quantity } = req.body;
+    const userId = user.id;
 
-  const product = await Product.findById(productId);
-  if (!product) return res.status(404).json({ msg: "Product not found" });
+    let cart = await Cart.findOne({ customer: userId });
 
-  let cart = await Cart.findOne({ customer: req.user.id });
+    if (!cart) {
+      cart = new Cart({
+        customer: userId,
+        items: [],
+        totalAmount: 0,
+      });
+    }
 
-  if (!cart) {
-    cart = new Cart({ customer: req.user.id, items: [], totalAmount: 0 });
+    // 🔥 CHECK IF PRODUCT ALREADY EXISTS
+    const existingItem = cart.items.find(
+      (item) => item.product.toString() === productId
+    );
+
+    if (existingItem) {
+      // ✅ Increase quantity
+      existingItem.quantity += quantity;
+
+      // ✅ Update totalAmount
+      cart.totalAmount += product.price * quantity;
+    } else {
+      // ✅ Add new item
+      cart.items.push({
+        product: productId,
+        vendorId: product.vendor,
+        quantity,
+        price: product.price,
+      });
+
+      cart.totalAmount += product.price * quantity;
+    }
+
+    await cart.save();
+
+    // Optional: populate product details
+    await cart.populate("items.product");
+
+    res.json({ msg: "Cart updated", cart });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
   }
-
-  cart.items.push({
-    product: productId,
-    vendorId: product.vendor,
-    quantity,
-    price: product.price
-  });
-
-  cart.totalAmount += product.price * quantity;
-  await cart.save();
-
-  res.json({ msg: "Added to cart", cart });
 });
-
-
-
 // GET CART
 
 
-router.get("/",  async (req, res) => {
-  const cart = await Cart.findOne({ customer: req.user.id })
+router.get("/:id",  async (req, res) => {
+  const cart = await Cart.findOne({ customer: req.params.id })
     .populate("items.product");
-
+  
   res.json(cart);
 });
 
@@ -51,8 +78,46 @@ router.get("/",  async (req, res) => {
 
 
 router.delete("/clear", auth, async (req, res) => {
-  await Cart.findOneAndDelete({ customer: req.user.id });
+  await Cart.findOneAndDelete({ customer: req.body.user.id });
   res.json({ msg: "Cart cleared" });
 });
+router.patch("/remove/:productId",  async (req, res) => {
+  try {
+    console.log(req.body)
+    const { productId } = req.params;
+    const userId = req.body.user.id;
 
+    const cart = await Cart.findOne({ customer: userId });
+
+    if (!cart) {
+      return res.status(404).json({ msg: "Cart not found" });
+    }
+
+    // 🔥 Find item to remove
+    const itemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ msg: "Product not in cart" });
+    }
+
+    // 🔥 Remove item
+    cart.items.splice(itemIndex, 1);
+
+    // 🔥 Recalculate totalAmount
+    cart.totalAmount = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    await cart.save();
+
+    res.json({ msg: "Item removed", cart });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
 module.exports = router;

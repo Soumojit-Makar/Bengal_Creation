@@ -11,10 +11,14 @@ function ProductDetailPage({ cart, wishlist, onAddCart, onToggleWish, openCart, 
   // console.log(p, "Hey")
 
   useEffect(() => { setImgIdx(0); }, [productId]);
-
+  const otherVendorProducts = allProducts.filter(
+  x => x.vendorId === p.vendorId && x.id !== p.id
+);
   if (!p) return null;
   const imgs = p.images || [{ url: p.thumb || "", label: "Product View" }];
-  const disc = Math.round((1 - p.price / p.original) * 100);
+  const disc = p.original
+  ? Math.round((1 - p.price / p.original) * 100)
+  : 0;
 
   const v = vendors.find(x => x.id === p.vendorId);
 
@@ -89,7 +93,7 @@ function ProductDetailPage({ cart, wishlist, onAddCart, onToggleWish, openCart, 
                 ))}
               </div>
             </div>
-            {/* {otherVendorProducts.length > 0 && (
+            {otherVendorProducts.length > 0 && (
               <div style={{ padding: "24px 32px" }}>
                 <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 17, color: "var(--maroon)", marginBottom: 16, fontStyle: "italic" }}>More from <strong style={{ fontStyle: "normal" }}>{v.name}</strong></div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(170px,1fr))", gap: 14 }}>
@@ -112,7 +116,7 @@ function ProductDetailPage({ cart, wishlist, onAddCart, onToggleWish, openCart, 
                   })}
                 </div>
               </div>
-            )} */}
+            )}
           </div>
         </div>
       )}
