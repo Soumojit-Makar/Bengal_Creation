@@ -13,15 +13,15 @@ function ProductCard({ p, inCart, inWish, onAddCart, onToggleWish, onShowProduct
       </div>
       <div className="product-body">
         <div className="product-name">{p.name}</div>
-        <div className="product-vendor">by {p.vendor} · {p.district}</div>
+        {/* <div className="product-vendor">by {p.vendor} · {p.district}</div>
         <div className="product-rating">{"★".repeat(Math.floor(p.rating))} {p.rating} ({p.reviews})</div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
           <span className="product-price">₹{p.price.toLocaleString()}</span>
           {p.original > p.price && <span className="product-price-original">₹{p.original.toLocaleString()}</span>}
-        </div>
-        <button className={`add-cart-btn${inCart ? " added" : ""}`} onClick={() => onAddCart(p.id)}>
+        </div> */}
+        {/* <button className={`add-cart-btn${inCart ? " added" : ""}`} onClick={() => onAddCart(p.id)}>
           {inCart ? "✓ Added to Cart" : "🛒 Add to Cart"}
-        </button>
+        </button> */}
       </div>
     </div>
   );

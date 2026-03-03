@@ -8,7 +8,7 @@ function Navbar({ cart, wishlist, currentUser, openCart, onSearch, openLogin, do
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  const cartCount = cart.reduce((s, c) => s + (c.qty || 1), 0);
+  const cartCount = cart.length;
 
   useEffect(() => {
     function handler(e) {

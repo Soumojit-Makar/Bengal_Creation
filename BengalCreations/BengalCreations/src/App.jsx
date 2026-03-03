@@ -665,9 +665,7 @@ export default function App() {
   const location = useLocation();
 
   const [filterCategory, setFilterCategory] = useState("");
-  const [cart, setCart] = useState(() =>
-    JSON.parse(localStorage.getItem("sm_cart") || "[]"),
-  );
+  const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState(() =>
     JSON.parse(localStorage.getItem("sm_wishlist") || "[]"),
   );
@@ -683,94 +681,115 @@ export default function App() {
   const [allProducts, setAllProducts] = useState([]);
   // const [categoryTiles, setCategoryTiles] = useState([]);
   const [vendors, setVendors] = useState([]);
-  const [catOptions,setCatOptions]=useState([])
+  const [catOptions, setCatOptions] = useState([]);
   const getAllVendors = async () => {
-  try {
-    const res = await fetch(`${API}/vendors`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API}/vendors`);
+      const data = await res.json();
 
-    const formattedVendors = data.map(v => ({
-      id: v._id,
-      name: v.shopName,
-      owner: v.name,
-      district: v.address,
-      rating: v.rating || 4.5,
-      products: v.products?.length || 0,
-      avatar: "🛍️",
-      category: "Handmade"
-    }));
+      const formattedVendors = data.map((v) => ({
+        id: v._id,
+        name: v.shopName,
+        owner: v.name,
+        district: v.address,
+        rating: v.rating || 4.5,
+        products: v.products?.length || 0,
+        avatar: "🛍️",
+        category: "Handmade",
+      }));
 
-    setVendors(formattedVendors);   // IMPORTANT
-    // console.log(formattedVendors);
-
-  } catch (err) {
-    console.error("Vendor fetch error:", err);
-  }
-};
-  const getAllCategory = async () => {
-   
-      try {
-        // setLoading(true);
-
-        const res = await fetch(`${API}/categories`, {
-          method: "GET",
-        });
-        // console.log(res)
-        const data = await res.json();
-        // console.log(data)
-        // setCategoryTiles(data)
-        // data.vendor.role = "vendor";
-        setCatOptions(data)
-      } catch (err) {
-        // setError(err.message);
-        console.error("Login error:", err);
-      } finally {
-        // setLoading(false);
-      }
-    
+      setVendors(formattedVendors); // IMPORTANT
+      // console.log(formattedVendors);
+    } catch (err) {
+      console.error("Vendor fetch error:", err);
+    }
   };
+  const getAllCategory = async () => {
+    try {
+      // setLoading(true);
+
+      const res = await fetch(`${API}/categories`, {
+        method: "GET",
+      });
+      // console.log(res)
+      const data = await res.json();
+      // console.log(data)
+      // setCategoryTiles(data)
+      // data.vendor.role = "vendor";
+      setCatOptions(data);
+    } catch (err) {
+      // setError(err.message);
+      console.error("Login error:", err);
+    } finally {
+      // setLoading(false);
+    }
+  };
+  const getAllCart = async () => {
+    try {
+      // setLoading(true);
+      const user = JSON.parse(localStorage.getItem("sm_user"));
+      const res = await fetch(`${API}/cart/${user._id}`, {
+        method: "GET",
+      });
+
+      // console.log(res)
+      const data = await res.json();
+      console.log(data.items);
+      setCart(data.items || []);
+      // data.vendor.role = "vendor";
+      setCatOptions(data);
+    } catch (err) {
+      // setError(err.message);
+      console.error("Login error:", err);
+    } finally {
+      // setLoading(false);
+    }
+  };
+
   const getAllProduct = async () => {
-  try {
-    const res = await fetch(`${API}/products`, {
-      method: "GET",
-    });
-    const data = await res.json();
-    // console.log(data);
+    try {
+      const res = await fetch(`${API}/products`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      // console.log(data);
 
-    // Transform server data to expected format
-    const transformed = data.map((item) => ({
-      id: item._id,
-      name: item.name,
-      vendor: item.vendor?.shopName || "Unknown Store",
-      vendorId: item.vendor?._id,
-      category: item.category?.name || "Uncategorized",
-      price: item.price,
-      original: item.orginalPrice,
-      district: item.district?.replace("📍 ", "") || "", // strip emoji if stored with it
-      rating: item.rating || 0,
-      reviews: item.reviews || 0,
-      emoji: item.emoji || "🛍️",
-      stock: item.stock,
-      thumb: item.images?.[0] || null,
-      images: item.images?.map((url, i) => ({
-        url,
-        label: i === 0 ? "Front View" : `View ${i + 1}`,
-      })) || [],
-      desc: item.description || "",
-      isActive: item.isActive,
-    }));
+      // Transform server data to expected format
+      const transformed = data.map((item) => ({
+        id: item._id,
+        name: item.name,
+        vendor: item.vendor?.shopName || "Unknown Store",
+        vendorId: item.vendor?._id,
+        category: item.category?.name || "Uncategorized",
+        price: item.price,
+        original: item.orginalPrice,
+        district: item.district?.replace("📍 ", "") || "", // strip emoji if stored with it
+        rating: item.rating || 0,
+        reviews: item.reviews || 0,
+        emoji: item.emoji || "🛍️",
+        stock: item.stock,
+        thumb: item.images?.[0] || null,
+        images:
+          item.images?.map((url, i) => ({
+            url,
+            label: i === 0 ? "Front View" : `View ${i + 1}`,
+          })) || [],
+        desc: item.description || "",
+        isActive: item.isActive,
+      }));
 
-    setAllProducts(transformed);
-  } catch (err) {
-    console.error("Fetch products error:", err);
-  }
-};
-  useEffect( ()=>{
-    getAllCategory()
-    getAllProduct()
-    getAllVendors()
+      setAllProducts(transformed);
+    } catch (err) {
+      console.error("Fetch products error:", err);
+    }
+  };
 
-  },[])
+  useEffect(() => {
+    getAllCategory();
+    getAllProduct();
+    getAllVendors();
+    getAllCart();
+  }, []);
   // useEffect(() => {
   //   // getAllProducts();
   // }, [allProducts.length]);
@@ -782,31 +801,108 @@ export default function App() {
       3000,
     );
   }, []);
+  // const addToCart = useCallback(
+  //   (id) => {
+  //     // const p = allProducts.find((x) => x.id === id);
+  //     // if (!p) return;
+  //     // setCart((prev) => {
+  //     //   const existing = prev.find((c) => c.id === id);
+  //     //   const updated = existing
+  //     //     ? prev.map((c) => (c.id === id ? { ...c, qty: (c.qty || 1) + 1 } : c))
+  //     //     : [...prev, { ...p, qty: 1 }];
+  //     //   localStorage.setItem("sm_cart", JSON.stringify(updated));
+  //     //   return updated;
+  //     // });
+  //     try{
 
+  //     }
+  //     showToast(`${p.emoji} "${p.name}" added to cart!`);
+  //   },
+  //   [showToast],
+  // );
   const addToCart = useCallback(
-    (id) => {
-      const p = allProducts.find((x) => x.id === id);
-      if (!p) return;
-      setCart((prev) => {
-        const existing = prev.find((c) => c.id === id);
-        const updated = existing
-          ? prev.map((c) => (c.id === id ? { ...c, qty: (c.qty || 1) + 1 } : c))
-          : [...prev, { ...p, qty: 1 }];
-        localStorage.setItem("sm_cart", JSON.stringify(updated));
-        return updated;
-      });
-      showToast(`${p.emoji} "${p.name}" added to cart!`);
+    async (id) => {
+      try {
+        console.log("1");
+        console.log(id);
+        // const token = localStorage.getItem("token");
+        // if (!token) {
+        //   showToast("Please login first!");
+        //   return;
+        // }
+        let user = JSON.parse(localStorage.getItem("sm_user"));
+
+        // Call backend API
+        console.log("3");
+        const res = await fetch(`${API}/cart/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId: id,
+            quantity: 1,
+            user: {
+              id: user._id,
+            },
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to add to cart");
+        }
+
+        // Optional: update cart state from response
+        console.log(data);
+        setCart(data.cart.items);
+        console.log("3");
+        showToast("Product added to cart successfully!");
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Something went wrong");
+      }
     },
     [showToast],
   );
+  const removeFromCart = useCallback(
+    async (productId) => {
+      try {
+        // const token = localStorage.getItem("token");
+        console.log(productId)
+        let user = JSON.parse(localStorage.getItem("sm_user"));
+        console.log(user);
+        const res = await fetch(`${API}/cart/remove/${productId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: {
+              id: user._id,
+            },
+          }),
+        });
 
-  const removeFromCart = useCallback((id) => {
-    setCart((prev) => {
-      const updated = prev.filter((c) => c.id !== id);
-      localStorage.setItem("sm_cart", JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.msg || "Failed to remove item");
+        }
+
+        // ✅ Update cart from backend response
+        // setCart(data.cart.items);
+
+        showToast("Item removed from cart");
+      } catch (err) {
+        console.error(err);
+        showToast("Something went wrong");
+      }
+    },
+    [showToast],
+  );
 
   const toggleWishlist = useCallback(
     (id) => {
@@ -901,8 +997,7 @@ export default function App() {
       <Toast message={toast.msg} visible={toast.visible} />
 
       <Routes>
-        
-          <Route
+        <Route
           path="/"
           element={
             <HomePage
@@ -918,8 +1013,7 @@ export default function App() {
             />
           }
         />
-       
-        
+
         <Route
           path="/shop"
           element={

@@ -1,5 +1,9 @@
 function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
-  const total = cart.reduce((s, p) => s + p.price * (p.qty || 1), 0);
+  const total = cart.reduce(
+  (sum, item) => sum + item.price * item.quantity,
+  0
+);
+  console.log(cart)
   return (
     <div className={`cart-overlay${isOpen ? " open" : ""}`} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="cart-panel">
@@ -13,22 +17,24 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
               <div className="cart-empty-icon">🛍️</div>
               <p>Your cart is empty</p>
             </div>
-          ) : cart.map(p => (
-            <div className="cart-item" key={p.id}>
+          ) : cart.map(item  => {
+            const p = item.product
+            return(
+            <div className="cart-item" key={item._id}>
               <div className="cart-item-img">
-                {p.thumb ? <img src={p.thumb} alt={p.name} /> : p.emoji}
+                {p.images[0] ? <img src={p.images[0]} alt={p.name} /> : p.emoji}
               </div>
               <div className="cart-item-info">
                 <div className="cart-item-name">{p.name}</div>
                 <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{p.vendor}</div>
                 <div className="cart-item-price">
-                  ₹{(p.price * (p.qty || 1)).toLocaleString()}
-                  {p.qty > 1 && <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 4 }}>×{p.qty}</span>}
+                  ₹{(p.price * (item.quantity || 1)).toLocaleString()}
+                  {item.quantity > 1 && <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 4 }}>×{item.quantity}</span>}
                 </div>
               </div>
-              <button className="cart-item-remove" onClick={() => removeFromCart(p.id)}>✕</button>
+              <button className="cart-item-remove" onClick={() => removeFromCart(p._id)}>✕</button>
             </div>
-          ))}
+)})}
         </div>
         {cart.length > 0 && (
           <div className="cart-footer">
