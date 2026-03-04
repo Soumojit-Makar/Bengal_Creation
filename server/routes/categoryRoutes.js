@@ -3,8 +3,8 @@ const router = express.Router();
 const Category = require("../models/category");
 const Vendor = require("../models/vendor");
 const Product = require("../models/product");
-const upload = require("../middleware/upload");
-const {cloudinarySingle,uploadToCloudinary }=require("../middleware/upload")
+// const upload = require("../middleware/upload");
+const {cloudinarySingle,uploadToCloudinary,upload }=require("../middleware/upload")
 
 // CREATE CATEGORY
 router.post("/", cloudinarySingle("image"), async (req, res) => {
@@ -71,7 +71,7 @@ router.get("/:id", async (req, res) => {
 // UPDATE CATEGORY
 
 
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id",  cloudinarySingle("image"), async (req, res) => {
     try {
 
         let updateData = req.body;
