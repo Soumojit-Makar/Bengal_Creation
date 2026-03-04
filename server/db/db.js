@@ -28,5 +28,5 @@ if (!process.env.MONGO_URI) {
   }
 };
 
-module.exports = connectDB;
+module.exports = {connectDB};
 module.exports=cachedDb;
