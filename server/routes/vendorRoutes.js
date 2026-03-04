@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Vendor = require("../models/vendor");
 const Product = require("../models/product");
-const { cloudinaryFields } = require("../middleware/upload"); // Changed from cloudinaryUploadFields
+const { cloudinaryUploadArray } = require("../middleware/upload"); // Changed from cloudinaryUploadFields
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
@@ -11,7 +11,7 @@ const jwt = require("jsonwebtoken");
 // REGISTER VENDOR WITH DOCUMENTS
 router.post(
   "/register",
-  cloudinaryFields([
+  cloudinaryUploadArray([
     { name: "tradeLicense", maxCount: 1 },
     { name: "aadhaarCard", maxCount: 1 },
     { name: "panCard", maxCount: 1 },
