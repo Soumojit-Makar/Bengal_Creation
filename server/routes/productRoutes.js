@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
-const Vendor = require("../models/Vendor");
+const Vendor = require("../models/vendor");
 const upload = require("../middleware/upload");
 const uploadImage = require("../middleware/cloudinary");
 
