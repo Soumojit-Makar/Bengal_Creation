@@ -3,7 +3,7 @@ const router = express.Router();
 const Category = require("../models/category");
 const Vendor = require("../models/vendor");
 const Product = require("../models/product");
-const cloudinarySingle=require("../middleware/upload")
+const {cloudinarySingle}=require("../middleware/upload")
 
 // CREATE CATEGORY
 
