@@ -2,66 +2,75 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
 const Vendor = require("../models/vendor");
-const upload = require("../middleware/upload");
-const uploadImage = require("../middleware/cloudinary");
-const { cloudinaryUploadFields } = require("../middleware/upload");
+const { cloudinaryUpload, cloudinaryUploadFields } = require("../middleware/upload");
 // CREATE PRODUCT
+router.post(
+  "/",
+  cloudinaryUploadFields([{ name: "images", maxCount: 5 }]), // Using fields, not array
+  async (req, res) => {
+    try {
+      console.log("Request body:", req.body);
+      console.log("Cloudinary files:", req.cloudinaryFiles);
 
-router.post("/", cloudinaryUploadFields.array("images", 5), async (req, res) => {
-  try {
-    req.body.price = parseFloat(req.body.price);
-    req.body.stock = parseInt(req.body.stock);
-    if (req.files && req.files.length > 0) {
-      console.log("Received files:", req.files);
-    } else {
-      console.log("No files received");
-      return res.status(400).json({ msg: "At least one image is required" });
-    }
+      // Parse numeric values
+      req.body.price = parseFloat(req.body.price);
+      req.body.stock = parseInt(req.body.stock);
+      if (req.body.orginalPrice) {
+        req.body.orginalPrice = parseFloat(req.body.orginalPrice);
+      }
 
-    const imageUrls = [];
+      // Check if files were uploaded via Cloudinary
+      if (!req.cloudinaryFiles || !req.cloudinaryFiles.images || req.cloudinaryFiles.images.length === 0) {
+        console.log("No files received");
+        return res.status(400).json({ msg: "At least one image is required" });
+      }
 
-    if (req.files) {
-      for (let file of req.files) {
-        if (file.size === 0) continue;
-        const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      // Get image URLs from Cloudinary
+      const imageUrls = req.cloudinaryFiles.images.map(file => file.url);
+      console.log("Image URLs:", imageUrls);
 
-        for (let file of req.files || []) {
-          if (!allowedTypes.includes(file.mimetype)) {
-            console.log("Invalid file type:", file.originalname);
-            return res.status(400).json({ msg: "Only PNG, JPG, JPEG allowed" });
-          }
+      // Validate file types (Cloudinary handles this, but we can add additional check)
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      for (let file of req.cloudinaryFiles.images) {
+        if (file.format && !['png', 'jpg', 'jpeg'].includes(file.format.toLowerCase())) {
+          return res.status(400).json({ msg: "Only PNG, JPG, JPEG allowed" });
         }
       }
-      for (let file of req.files) {
-        if (file.size === 0) continue; // Skip empty files
-        const result = await uploadImage(file.path); // using disk storage
-        imageUrls.push(result.secure_url);
-      }
+
+      // Create product
+      const product = new Product({
+        name: req.body.name,
+        description: req.body.description,
+        price: req.body.price,
+        district: req.body.district,
+        originalPrice: req.body.orginalPrice, // Fixed typo: orginalPrice -> originalPrice
+        stock: req.body.stock,
+        category: req.body.category,
+        vendor: req.body.vendor,
+        images: imageUrls,
+      });
+
+      await product.save();
+      
+      // Update vendor with product reference
+      await Vendor.findByIdAndUpdate(req.body.vendor, {
+        $push: { products: product._id },
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Product created successfully",
+        product
+      });
+    } catch (err) {
+      console.error("Product creation error:", err);
+      res.status(500).json({ 
+        success: false,
+        error: err.message 
+      });
     }
-
-    const product = new Product({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      district: req.body.district,
-      orginalPrice: req.body.orginalPrice,
-      stock: req.body.stock,
-      category: req.body.category,
-      vendor: req.body.vendor,
-      images: imageUrls,
-    });
-
-    await product.save();
-    await Vendor.findByIdAndUpdate(req.body.vendor, {
-      $push: { products: product._id },
-    });
-
-    res.status(201).json(product);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
-});
-
+);
 // GET ALL PRODUCTS
 
 router.get("/", async (req, res) => {

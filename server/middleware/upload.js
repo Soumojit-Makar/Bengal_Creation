@@ -137,9 +137,36 @@ const cloudinaryUploadFields = (fields) => {
     };
 };
 
+const cloudinaryUploadArray = (fieldName, maxCount) => {
+  return (req, res, next) => {
+    const arrayUpload = upload.array(fieldName, maxCount);
+    
+    arrayUpload(req, res, async (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      if (!req.files) return next();
+      
+      try {
+        req.cloudinaryFiles = [];
+        for (const file of req.files) {
+          const result = await uploadToCloudinary(
+            file.buffer,
+            file.originalname,
+            req.body.folder || fieldName
+          );
+          req.cloudinaryFiles.push(result);
+        }
+        next();
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  };
+};
+
 module.exports = {
     upload,
     cloudinaryUpload,
     cloudinaryUploadFields,
-    uploadToCloudinary
+    uploadToCloudinary,
+    cloudinaryUploadArray
 };
