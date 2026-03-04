@@ -1,7 +1,7 @@
 // routes/vendorRoutes.js
 const express = require("express");
 const router = express.Router();
-const Vendor = require("../models/Vendor");
+const Vendor = require("../models/vendor");
 const Product = require("../models/product");
 const upload = require("../middleware/upload");
 const bcrypt = require("bcryptjs");
