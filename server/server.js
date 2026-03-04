@@ -19,6 +19,12 @@ const webhookRoutes = require("./routes/webhookRoutes");
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Debug: Check environment variables (remove in production)
+console.log("Environment Check:");
+console.log("- NODE_ENV:", process.env.NODE_ENV);
+console.log("- MONGODB_URI exists:", !!process.env.MONGODB_URI);
+console.log("- CLOUDINARY_CLOUD_NAME exists:", !!process.env.CLOUDINARY_CLOUD_NAME);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,27 +47,41 @@ async function connectToDatabase() {
     console.log("Using cached database connection");
     return cachedDb;
   }
+
+  // Check if MONGODB_URI exists
+  if (!process.env.MONGODB_URI) {
+    console.error("❌ MONGODB_URI is not defined in environment variables");
+    throw new Error("MONGODB_URI is not defined");
+  }
   
   try {
+    console.log("Attempting to connect to MongoDB...");
     const db = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s
+      socketTimeoutMS: 45000, // Close sockets after 45s
     });
     cachedDb = db;
-    console.log(`MongoDB Connected: ${db.connection.host}`);
+    console.log(`✅ MongoDB Connected: ${db.connection.host}`);
     
     // Seed categories after successful connection
     await seedCategories();
     
     return db;
   } catch (error) {
-    console.error("MongoDB connection error:", error);
+    console.error("❌ MongoDB connection error:", error.message);
     throw error;
   }
 }
 
-// Database connection middleware
+// Database connection middleware - only connect when routes are accessed
 app.use(async (req, res, next) => {
+  // Skip database for health check and root endpoints
+  if (req.path === '/health' || req.path === '/') {
+    return next();
+  }
+  
   try {
     await connectToDatabase();
     next();
@@ -69,7 +89,8 @@ app.use(async (req, res, next) => {
     res.status(500).json({ 
       success: false,
       message: "Database connection failed",
-      error: error.message 
+      error: error.message,
+      hint: "Check if MONGODB_URI is set in Vercel environment variables"
     });
   }
 });
@@ -93,6 +114,7 @@ app.get("/", (req, res) => {
     message: "Vendor API Server",
     version: "1.0.0",
     environment: process.env.NODE_ENV || "development",
+    mongodb_configured: !!process.env.MONGODB_URI,
     timestamp: new Date().toISOString(),
     endpoints: {
       vendors: "/api/vendors",
@@ -117,6 +139,7 @@ app.get("/health", (req, res) => {
     status: "OK",
     message: "Server is running on Vercel",
     database: cachedDb ? "Connected" : "Not connected",
+    mongodb_uri_configured: !!process.env.MONGODB_URI,
     timestamp: new Date().toISOString()
   });
 });
@@ -187,9 +210,19 @@ app.use((err, req, res, next) => {
 
 // For local development
 if (process.env.NODE_ENV !== "production") {
+  // Check local .env file
+  require("dotenv").config();
+  
+  if (!process.env.MONGODB_URI) {
+    console.error("❌ MONGODB_URI not found in .env file");
+    console.log("Please create a .env file with your MongoDB connection string");
+  } else {
+    // Connect to database for local development
+    connectToDatabase().catch(console.error);
+  }
+  
   app.listen(port, () => {
     console.log(`🚀 Server running on http://localhost:${port}`);
-    console.log(`📚 API Documentation available at http://localhost:${port}`);
   });
 }
 
