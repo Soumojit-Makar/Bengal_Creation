@@ -9,7 +9,6 @@ function ShopPage({
   onToggleWish,
   allProducts,
   WB_DISTRICTS,
-  catOptions
 }) {
   const navigate = useNavigate();
   const location = useLocation();
