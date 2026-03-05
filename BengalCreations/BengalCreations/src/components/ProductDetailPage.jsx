@@ -7,7 +7,7 @@ function ProductDetailPage({ cart, wishlist, onAddCart, onToggleWish, openCart, 
     try {
       const res = await fetch(`${API}/vendors`);
       const data = await res.json();
-
+      console.log(data)
       const formattedVendors = data.map((v) => ({
         id: v._id,
         name: v.shopName,
