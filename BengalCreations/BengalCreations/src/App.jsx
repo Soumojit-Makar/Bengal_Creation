@@ -713,7 +713,7 @@ export default function App() {
       });
       // console.log(res)
       const data = await res.json();
-      // console.log(data)
+      console.log(data)
       // setCategoryTiles(data)
       // data.vendor.role = "vendor";
       setCatOptions(data);
