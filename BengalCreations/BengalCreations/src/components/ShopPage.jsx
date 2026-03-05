@@ -9,6 +9,7 @@ function ShopPage({
   onToggleWish,
   allProducts,
   WB_DISTRICTS,
+  catOptions
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,6 +17,9 @@ function ShopPage({
   const [catOptions,setCatOptions]=useState([])
   const getAllCategory = async () => {
     try {
+      if(catOptions.length>0){
+        return
+      }
       const res = await fetch(`${API}/categories`, {
         method: "GET",
       });
