@@ -78,7 +78,10 @@ function ShopPage({
               }
             >
               <option value="">All Categories</option>
-              {catOptions.map((c) => (
+              { console.log("test : ".catOptions)}
+              {
+               
+              catOptions.map((c) => (
                 <option key={c._id} value={c.name}> 
                   {c.name}
                 </option>
