@@ -23,7 +23,7 @@ function ShopPage({
     search: locationState.searchQuery || "",
   });
   const [ratingFilter, setRatingFilter] = useState(0);
-
+  console.log(catOptions)
   // Update filters if location state changes (e.g. navigating to /shop from different category)
   useEffect(() => {
     setFilters((f) => ({
