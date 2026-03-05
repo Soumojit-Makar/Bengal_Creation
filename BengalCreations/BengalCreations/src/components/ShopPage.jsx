@@ -18,6 +18,7 @@ function ShopPage({
   const getAllCategory = async () => {
     try {
       if(catOptions.length>0){
+        setCatOptions(catOptions)
         return
       }
       const res = await fetch(`${API}/categories`, {
