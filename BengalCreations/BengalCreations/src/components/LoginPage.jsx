@@ -283,14 +283,14 @@ const registerVendor = async () => {
                   </button>
                 )}
               </div>
-              <div className="demo-hint">
+              {/* <div className="demo-hint">
                 <div className="demo-hint-label">DEMO ACCOUNTS</div>
                 <div>
                   {role === "customer"
                     ? "👤 customer@demo.com / demo123"
                     : "🏪 vendor@demo.com / demo123"}
                 </div>
-              </div>
+              </div> */}
             </div>
           ) : (
             <div>
