@@ -106,7 +106,7 @@ function ShopPage({
               <option value="">All Categories</option>
               {console.log("test : ", catOptions)}
               {catOptions.map((c) => (
-                <option key={c._id} value={c.name}>
+                <option key={c._id ?? c.name} value={c.name}>
                   {c.name}
                 </option>
               ))}
