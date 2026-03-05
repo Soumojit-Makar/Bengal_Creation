@@ -1414,6 +1414,7 @@ footer {
   );
   color: var(--gold-pale);
   padding: 10px 15px 2px;
+  bottom: 0;
 }
 .footer-grid {
   display: grid;
