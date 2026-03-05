@@ -9,12 +9,25 @@ function ShopPage({
   onToggleWish,
   allProducts,
   WB_DISTRICTS,
-  catOptions,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state || {};
-
+  const [catOptions,setCatOptions]=useState([])
+  const getAllCategory = async () => {
+    try {
+      const res = await fetch(`${API}/categories`, {
+        method: "GET",
+      });
+      console.log(res);
+      const data = await res.json();
+      console.log(data);
+      setCatOptions(data);
+    } catch (err) {
+      console.error("Login error:", err);
+    } finally {
+    }
+  };
   const [filters, setFilters] = useState({
     category: "",
     district: "",
@@ -23,9 +36,10 @@ function ShopPage({
     search: locationState.searchQuery || "",
   });
   const [ratingFilter, setRatingFilter] = useState(0);
-  console.log(catOptions)
+  console.log(catOptions);
   // Update filters if location state changes (e.g. navigating to /shop from different category)
   useEffect(() => {
+    getAllCategory()
     setFilters((f) => ({
       ...f,
       category: locationState.category || f.category,
@@ -78,11 +92,9 @@ function ShopPage({
               }
             >
               <option value="">All Categories</option>
-              { console.log("test : ",catOptions)}
-              {
-               
-              catOptions.map((c) => (
-                <option key={c._id} value={c.name}> 
+              {console.log("test : ", catOptions)}
+              {catOptions.map((c) => (
+                <option key={c._id} value={c.name}>
                   {c.name}
                 </option>
               ))}
@@ -145,14 +157,14 @@ function ShopPage({
           </button>
         </aside>
         <div className="shop-main">
-          <h2>{
-          (
-            <>
-            {console.log(filters)}
-            {filters.category || "All Products"}
-            </>
-          )
-          }</h2>
+          <h2>
+            {
+              <>
+                {console.log(filters)}
+                {filters.category || "All Products"}
+              </>
+            }
+          </h2>
           <div className="shop-count">
             {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
           </div>

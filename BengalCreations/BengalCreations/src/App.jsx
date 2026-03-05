@@ -131,451 +131,451 @@ const WB_DISTRICTS = [
 //   },
 // ];
 
-const allProducts = [
-  {
-    id: 1,
-    name: "Baluchari Silk Saree",
-    vendor: "Murshidabad Silk Palace",
-    vendorId: 2,
-    category: "Handloom Sarees",
-    price: 4500,
-    original: 5500,
-    district: "Murshidabad",
-    rating: 4.9,
-    reviews: 124,
-    emoji: "🥻",
-    stock: 8,
-    thumb:
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=700&q=85",
-        label: "Front View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=700&q=85",
-        label: "Weave Detail",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=700&q=85",
-        label: "Zari Border",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
-        label: "Drape Style",
-      },
-    ],
-    desc: "Exquisite hand-woven Baluchari silk saree featuring intricate mythological scenes from the Ramayana and Mahabharata. Made by master weavers in Bishnupur, this saree represents the pinnacle of Bengali textile art. Each piece takes 2-3 weeks to complete.",
-  },
-  {
-    id: 2,
-    name: "Bishnupur Terracotta Horse",
-    vendor: "Bishnupur Crafts House",
-    vendorId: 1,
-    category: "Terracotta Crafts",
-    price: 850,
-    original: 1100,
-    district: "Bankura",
-    rating: 4.8,
-    reviews: 89,
-    emoji: "🐴",
-    stock: 25,
-    thumb:
-      "https://images.unsplash.com/photo-1566895733044-d2bdda8b6234?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1566895733044-d2bdda8b6234?w=700&q=85",
-        label: "Full View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1604497181015-76590d828b65?w=700&q=85",
-        label: "Side Profile",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=85",
-        label: "Hand Painted",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=700&q=85",
-        label: "Clay Detail",
-      },
-    ],
-    desc: "Traditional Bankura horse crafted from terracotta clay with hand-painted motifs. A timeless symbol of Bengali folk art, these horses have been crafted in Bishnupur for over 300 years.",
-  },
-  {
-    id: 3,
-    name: "Dokra Dancing Girl Figurine",
-    vendor: "Dokra Tribal Art Studio",
-    vendorId: 3,
-    category: "Dokra Art",
-    price: 1200,
-    original: 1500,
-    district: "Jhargram",
-    rating: 4.7,
-    reviews: 56,
-    emoji: "🔔",
-    stock: 12,
-    thumb:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=700&q=85",
-        label: "Front View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1517697471339-4aa32003c11a?w=700&q=85",
-        label: "Metal Detail",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1604664801335-1c74c6e41c97?w=700&q=85",
-        label: "Side View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=700&q=85",
-        label: "Tribal Motifs",
-      },
-    ],
-    desc: "Ancient lost-wax cast metal figurine depicting a dancing woman. Dokra is one of India's oldest metal casting traditions, dating back 4000+ years.",
-  },
-  {
-    id: 4,
-    name: "Santiniketan Batik Stole",
-    vendor: "Santiniketan Handloom",
-    vendorId: 4,
-    category: "Handloom Sarees",
-    price: 680,
-    original: 900,
-    district: "Birbhum",
-    rating: 4.6,
-    reviews: 73,
-    emoji: "🎨",
-    stock: 30,
-    thumb:
-      "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
-        label: "Full Stole",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=700&q=85",
-        label: "Alpona Motif",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1594938298603-c8148c4b4057?w=700&q=85",
-        label: "Batik Texture",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85",
-        label: "Colour Detail",
-      },
-    ],
-    desc: "Beautiful batik-printed cotton stole inspired by Tagore's Santiniketan. Features traditional Alpona motifs and natural dye colors.",
-  },
-  {
-    id: 5,
-    name: "Jute Eco Tote Bag — Alpona",
-    vendor: "Nadia Jute Creations",
-    vendorId: 8,
-    category: "Jute Products",
-    price: 320,
-    original: 420,
-    district: "Nadia",
-    rating: 4.8,
-    reviews: 210,
-    emoji: "🧺",
-    stock: 50,
-    thumb:
-      "https://images.unsplash.com/photo-1597149305765-e5e1fdbbf6b0?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1597149305765-e5e1fdbbf6b0?w=700&q=85",
-        label: "Front View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700&q=85",
-        label: "Back View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700&q=85",
-        label: "Handle Detail",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1595341595379-cf1cb693b474?w=700&q=85",
-        label: "Pattern Close-up",
-      },
-    ],
-    desc: "Eco-friendly jute bag decorated with traditional Alpona patterns in natural colors. Handcrafted by SHG women artisans in Nadia.",
-  },
-  {
-    id: 6,
-    name: "Rosogolla Gift Box (12 pcs)",
-    vendor: "Kolkata Mishti Bhandar",
-    vendorId: 6,
-    category: "Bengal Sweets",
-    price: 480,
-    original: 480,
-    district: "Kolkata",
-    rating: 4.9,
-    reviews: 340,
-    emoji: "🍬",
-    stock: 100,
-    thumb:
-      "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=700&q=85",
-        label: "Gift Box",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=700&q=85",
-        label: "Close-up",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=700&q=85",
-        label: "Sweet Platter",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=700&q=85",
-        label: "Packaging",
-      },
-    ],
-    desc: "Authentic sponge rosogolla made from fresh chhena. Soft, melt-in-mouth texture soaked in light sugar syrup. GI-tagged product from Kolkata.",
-  },
-  {
-    id: 7,
-    name: "Wooden Durga Panel (Wall Art)",
-    vendor: "Purulia Wooden Art",
-    vendorId: 7,
-    category: "Wooden Handicrafts",
-    price: 2200,
-    original: 2800,
-    district: "Purulia",
-    rating: 4.5,
-    reviews: 34,
-    emoji: "🪵",
-    stock: 6,
-    thumb:
-      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=700&q=85",
-        label: "Full Panel",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=700&q=85",
-        label: "Carving Detail",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1510507767-4e574fe8e7ee?w=700&q=85",
-        label: "Wood Grain",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=700&q=85",
-        label: "Wall Display",
-      },
-    ],
-    desc: "Hand-carved wooden panel depicting Goddess Durga. Made from seasoned sheesham wood by master craftsmen. Finished with natural lacquer.",
-  },
-  {
-    id: 8,
-    name: "Muslin Cotton Saree — Dhaniakhali",
-    vendor: "Santiniketan Handloom",
-    vendorId: 4,
-    category: "Handloom Sarees",
-    price: 1800,
-    original: 2400,
-    district: "Birbhum",
-    rating: 4.7,
-    reviews: 98,
-    emoji: "🥻",
-    stock: 15,
-    thumb:
-      "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=700&q=85",
-        label: "Full Drape",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=700&q=85",
-        label: "Check Pattern",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=700&q=85",
-        label: "Weave Texture",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
-        label: "Border Detail",
-      },
-    ],
-    desc: "Pure cotton Dhaniakhali saree with traditional check pattern in deep red and white. A staple of Bengali culture for over a century.",
-  },
-  {
-    id: 9,
-    name: "Darjeeling Tea Premium Gift Set",
-    vendor: "Darjeeling Tea & Crafts",
-    vendorId: 5,
-    category: "Jute Products",
-    price: 950,
-    original: 1200,
-    district: "Darjeeling",
-    rating: 4.8,
-    reviews: 187,
-    emoji: "🍵",
-    stock: 40,
-    thumb:
-      "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=700&q=85",
-        label: "Gift Set",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=700&q=85",
-        label: "Tea Leaves",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?w=700&q=85",
-        label: "Brew Ready",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1597149305765-e5e1fdbbf6b0?w=700&q=85",
-        label: "Jute Box",
-      },
-    ],
-    desc: "Premium Darjeeling first-flush tea in a handmade jute gift box. Includes 3 varieties: Silver Tips, Muscatel, and Classic FTGFOP1.",
-  },
-  {
-    id: 10,
-    name: "Dokra Elephant Pair",
-    vendor: "Dokra Tribal Art Studio",
-    vendorId: 3,
-    category: "Dokra Art",
-    price: 1850,
-    original: 2200,
-    district: "Jhargram",
-    rating: 4.9,
-    reviews: 45,
-    emoji: "🐘",
-    stock: 8,
-    thumb:
-      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700&q=85",
-        label: "Pair View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1604497181015-76590d828b65?w=700&q=85",
-        label: "Trunk Detail",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=700&q=85",
-        label: "Motif Close-up",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=700&q=85",
-        label: "Side Profile",
-      },
-    ],
-    desc: "Charming pair of Dokra brass elephants with intricate tribal motifs. Traditional metal craft using the 4000-year-old cire perdue technique.",
-  },
-  {
-    id: 11,
-    name: "Bankura Terracotta Wall Plate",
-    vendor: "Bishnupur Crafts House",
-    vendorId: 1,
-    category: "Terracotta Crafts",
-    price: 550,
-    original: 700,
-    district: "Bankura",
-    rating: 4.6,
-    reviews: 62,
-    emoji: "🏺",
-    stock: 20,
-    thumb:
-      "https://images.unsplash.com/photo-1604664801335-1c74c6e41c97?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1604664801335-1c74c6e41c97?w=700&q=85",
-        label: "Front View",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=700&q=85",
-        label: "Temple Motif",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1566895733044-d2bdda8b6234?w=700&q=85",
-        label: "Clay Detail",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=85",
-        label: "Wall Display",
-      },
-    ],
-    desc: "Decorative terracotta wall plate with hand-painted Bishnupur temple motifs. Fired in traditional kilns and finished with natural oxide colors.",
-  },
-  {
-    id: 12,
-    name: "Sandesh Box — Nolen Gur",
-    vendor: "Kolkata Mishti Bhandar",
-    vendorId: 6,
-    category: "Bengal Sweets",
-    price: 380,
-    original: 380,
-    district: "Kolkata",
-    rating: 5.0,
-    reviews: 280,
-    emoji: "🍮",
-    stock: 80,
-    thumb:
-      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=700&q=85",
-        label: "Box Open",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=700&q=85",
-        label: "Close-up",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=700&q=85",
-        label: "Gift Pack",
-      },
-      {
-        url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=700&q=85",
-        label: "Platter View",
-      },
-    ],
-    desc: "Seasonal specialty: Nolen Gur sandesh from old Kolkata. Soft, crumbly texture with the unmistakable aroma of winter date-palm jaggery.",
-  },
-  {
-    id: 13,
-    name: "Fabwomen Floral Handloom Saree",
-    vendor: "Santiniketan Handloom",
-    vendorId: 4,
-    category: "Handloom Sarees",
-    price: 380,
-    original: 380,
-    district: "Kolkata",
-    rating: 5.0,
-    reviews: 280,
-    emoji: "🥻",
-    stock: 80,
-    thumb:
-      "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=400&q=80",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
-        label: "Full View",
-      },
-    ],
-    desc: "Floral handloom saree crafted with traditional Bengal weaving techniques.",
-  },
-];
+// const allProducts = [
+//   {
+//     id: 1,
+//     name: "Baluchari Silk Saree",
+//     vendor: "Murshidabad Silk Palace",
+//     vendorId: 2,
+//     category: "Handloom Sarees",
+//     price: 4500,
+//     original: 5500,
+//     district: "Murshidabad",
+//     rating: 4.9,
+//     reviews: 124,
+//     emoji: "🥻",
+//     stock: 8,
+//     thumb:
+//       "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=700&q=85",
+//         label: "Front View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=700&q=85",
+//         label: "Weave Detail",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=700&q=85",
+//         label: "Zari Border",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
+//         label: "Drape Style",
+//       },
+//     ],
+//     desc: "Exquisite hand-woven Baluchari silk saree featuring intricate mythological scenes from the Ramayana and Mahabharata. Made by master weavers in Bishnupur, this saree represents the pinnacle of Bengali textile art. Each piece takes 2-3 weeks to complete.",
+//   },
+//   {
+//     id: 2,
+//     name: "Bishnupur Terracotta Horse",
+//     vendor: "Bishnupur Crafts House",
+//     vendorId: 1,
+//     category: "Terracotta Crafts",
+//     price: 850,
+//     original: 1100,
+//     district: "Bankura",
+//     rating: 4.8,
+//     reviews: 89,
+//     emoji: "🐴",
+//     stock: 25,
+//     thumb:
+//       "https://images.unsplash.com/photo-1566895733044-d2bdda8b6234?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1566895733044-d2bdda8b6234?w=700&q=85",
+//         label: "Full View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1604497181015-76590d828b65?w=700&q=85",
+//         label: "Side Profile",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=85",
+//         label: "Hand Painted",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=700&q=85",
+//         label: "Clay Detail",
+//       },
+//     ],
+//     desc: "Traditional Bankura horse crafted from terracotta clay with hand-painted motifs. A timeless symbol of Bengali folk art, these horses have been crafted in Bishnupur for over 300 years.",
+//   },
+//   {
+//     id: 3,
+//     name: "Dokra Dancing Girl Figurine",
+//     vendor: "Dokra Tribal Art Studio",
+//     vendorId: 3,
+//     category: "Dokra Art",
+//     price: 1200,
+//     original: 1500,
+//     district: "Jhargram",
+//     rating: 4.7,
+//     reviews: 56,
+//     emoji: "🔔",
+//     stock: 12,
+//     thumb:
+//       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=700&q=85",
+//         label: "Front View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1517697471339-4aa32003c11a?w=700&q=85",
+//         label: "Metal Detail",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1604664801335-1c74c6e41c97?w=700&q=85",
+//         label: "Side View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=700&q=85",
+//         label: "Tribal Motifs",
+//       },
+//     ],
+//     desc: "Ancient lost-wax cast metal figurine depicting a dancing woman. Dokra is one of India's oldest metal casting traditions, dating back 4000+ years.",
+//   },
+//   {
+//     id: 4,
+//     name: "Santiniketan Batik Stole",
+//     vendor: "Santiniketan Handloom",
+//     vendorId: 4,
+//     category: "Handloom Sarees",
+//     price: 680,
+//     original: 900,
+//     district: "Birbhum",
+//     rating: 4.6,
+//     reviews: 73,
+//     emoji: "🎨",
+//     stock: 30,
+//     thumb:
+//       "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
+//         label: "Full Stole",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=700&q=85",
+//         label: "Alpona Motif",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1594938298603-c8148c4b4057?w=700&q=85",
+//         label: "Batik Texture",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85",
+//         label: "Colour Detail",
+//       },
+//     ],
+//     desc: "Beautiful batik-printed cotton stole inspired by Tagore's Santiniketan. Features traditional Alpona motifs and natural dye colors.",
+//   },
+//   {
+//     id: 5,
+//     name: "Jute Eco Tote Bag — Alpona",
+//     vendor: "Nadia Jute Creations",
+//     vendorId: 8,
+//     category: "Jute Products",
+//     price: 320,
+//     original: 420,
+//     district: "Nadia",
+//     rating: 4.8,
+//     reviews: 210,
+//     emoji: "🧺",
+//     stock: 50,
+//     thumb:
+//       "https://images.unsplash.com/photo-1597149305765-e5e1fdbbf6b0?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1597149305765-e5e1fdbbf6b0?w=700&q=85",
+//         label: "Front View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700&q=85",
+//         label: "Back View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700&q=85",
+//         label: "Handle Detail",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1595341595379-cf1cb693b474?w=700&q=85",
+//         label: "Pattern Close-up",
+//       },
+//     ],
+//     desc: "Eco-friendly jute bag decorated with traditional Alpona patterns in natural colors. Handcrafted by SHG women artisans in Nadia.",
+//   },
+//   {
+//     id: 6,
+//     name: "Rosogolla Gift Box (12 pcs)",
+//     vendor: "Kolkata Mishti Bhandar",
+//     vendorId: 6,
+//     category: "Bengal Sweets",
+//     price: 480,
+//     original: 480,
+//     district: "Kolkata",
+//     rating: 4.9,
+//     reviews: 340,
+//     emoji: "🍬",
+//     stock: 100,
+//     thumb:
+//       "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=700&q=85",
+//         label: "Gift Box",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=700&q=85",
+//         label: "Close-up",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=700&q=85",
+//         label: "Sweet Platter",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=700&q=85",
+//         label: "Packaging",
+//       },
+//     ],
+//     desc: "Authentic sponge rosogolla made from fresh chhena. Soft, melt-in-mouth texture soaked in light sugar syrup. GI-tagged product from Kolkata.",
+//   },
+//   {
+//     id: 7,
+//     name: "Wooden Durga Panel (Wall Art)",
+//     vendor: "Purulia Wooden Art",
+//     vendorId: 7,
+//     category: "Wooden Handicrafts",
+//     price: 2200,
+//     original: 2800,
+//     district: "Purulia",
+//     rating: 4.5,
+//     reviews: 34,
+//     emoji: "🪵",
+//     stock: 6,
+//     thumb:
+//       "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=700&q=85",
+//         label: "Full Panel",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=700&q=85",
+//         label: "Carving Detail",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1510507767-4e574fe8e7ee?w=700&q=85",
+//         label: "Wood Grain",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=700&q=85",
+//         label: "Wall Display",
+//       },
+//     ],
+//     desc: "Hand-carved wooden panel depicting Goddess Durga. Made from seasoned sheesham wood by master craftsmen. Finished with natural lacquer.",
+//   },
+//   {
+//     id: 8,
+//     name: "Muslin Cotton Saree — Dhaniakhali",
+//     vendor: "Santiniketan Handloom",
+//     vendorId: 4,
+//     category: "Handloom Sarees",
+//     price: 1800,
+//     original: 2400,
+//     district: "Birbhum",
+//     rating: 4.7,
+//     reviews: 98,
+//     emoji: "🥻",
+//     stock: 15,
+//     thumb:
+//       "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=700&q=85",
+//         label: "Full Drape",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=700&q=85",
+//         label: "Check Pattern",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=700&q=85",
+//         label: "Weave Texture",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
+//         label: "Border Detail",
+//       },
+//     ],
+//     desc: "Pure cotton Dhaniakhali saree with traditional check pattern in deep red and white. A staple of Bengali culture for over a century.",
+//   },
+//   {
+//     id: 9,
+//     name: "Darjeeling Tea Premium Gift Set",
+//     vendor: "Darjeeling Tea & Crafts",
+//     vendorId: 5,
+//     category: "Jute Products",
+//     price: 950,
+//     original: 1200,
+//     district: "Darjeeling",
+//     rating: 4.8,
+//     reviews: 187,
+//     emoji: "🍵",
+//     stock: 40,
+//     thumb:
+//       "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=700&q=85",
+//         label: "Gift Set",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=700&q=85",
+//         label: "Tea Leaves",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?w=700&q=85",
+//         label: "Brew Ready",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1597149305765-e5e1fdbbf6b0?w=700&q=85",
+//         label: "Jute Box",
+//       },
+//     ],
+//     desc: "Premium Darjeeling first-flush tea in a handmade jute gift box. Includes 3 varieties: Silver Tips, Muscatel, and Classic FTGFOP1.",
+//   },
+//   {
+//     id: 10,
+//     name: "Dokra Elephant Pair",
+//     vendor: "Dokra Tribal Art Studio",
+//     vendorId: 3,
+//     category: "Dokra Art",
+//     price: 1850,
+//     original: 2200,
+//     district: "Jhargram",
+//     rating: 4.9,
+//     reviews: 45,
+//     emoji: "🐘",
+//     stock: 8,
+//     thumb:
+//       "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700&q=85",
+//         label: "Pair View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1604497181015-76590d828b65?w=700&q=85",
+//         label: "Trunk Detail",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=700&q=85",
+//         label: "Motif Close-up",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=700&q=85",
+//         label: "Side Profile",
+//       },
+//     ],
+//     desc: "Charming pair of Dokra brass elephants with intricate tribal motifs. Traditional metal craft using the 4000-year-old cire perdue technique.",
+//   },
+//   {
+//     id: 11,
+//     name: "Bankura Terracotta Wall Plate",
+//     vendor: "Bishnupur Crafts House",
+//     vendorId: 1,
+//     category: "Terracotta Crafts",
+//     price: 550,
+//     original: 700,
+//     district: "Bankura",
+//     rating: 4.6,
+//     reviews: 62,
+//     emoji: "🏺",
+//     stock: 20,
+//     thumb:
+//       "https://images.unsplash.com/photo-1604664801335-1c74c6e41c97?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1604664801335-1c74c6e41c97?w=700&q=85",
+//         label: "Front View",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=700&q=85",
+//         label: "Temple Motif",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1566895733044-d2bdda8b6234?w=700&q=85",
+//         label: "Clay Detail",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=85",
+//         label: "Wall Display",
+//       },
+//     ],
+//     desc: "Decorative terracotta wall plate with hand-painted Bishnupur temple motifs. Fired in traditional kilns and finished with natural oxide colors.",
+//   },
+//   {
+//     id: 12,
+//     name: "Sandesh Box — Nolen Gur",
+//     vendor: "Kolkata Mishti Bhandar",
+//     vendorId: 6,
+//     category: "Bengal Sweets",
+//     price: 380,
+//     original: 380,
+//     district: "Kolkata",
+//     rating: 5.0,
+//     reviews: 280,
+//     emoji: "🍮",
+//     stock: 80,
+//     thumb:
+//       "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=700&q=85",
+//         label: "Box Open",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=700&q=85",
+//         label: "Close-up",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=700&q=85",
+//         label: "Gift Pack",
+//       },
+//       {
+//         url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=700&q=85",
+//         label: "Platter View",
+//       },
+//     ],
+//     desc: "Seasonal specialty: Nolen Gur sandesh from old Kolkata. Soft, crumbly texture with the unmistakable aroma of winter date-palm jaggery.",
+//   },
+//   {
+//     id: 13,
+//     name: "Fabwomen Floral Handloom Saree",
+//     vendor: "Santiniketan Handloom",
+//     vendorId: 4,
+//     category: "Handloom Sarees",
+//     price: 380,
+//     original: 380,
+//     district: "Kolkata",
+//     rating: 5.0,
+//     reviews: 280,
+//     emoji: "🥻",
+//     stock: 80,
+//     thumb:
+//       "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=400&q=80",
+//     images: [
+//       {
+//         url: "https://images.unsplash.com/photo-1558171813-8a7e53f69090?w=700&q=85",
+//         label: "Full View",
+//       },
+//     ],
+//     desc: "Floral handloom saree crafted with traditional Bengal weaving techniques.",
+//   },
+// ];
 
 const categoryTiles = [
   {
@@ -635,19 +635,19 @@ const emojiOptions = [
 //   { name: "Bengal Sweets", emoji: "🍬" },
 // ];
 
-const demoAccounts = {
-  "customer@demo.com": {
-    password: "demo123",
-    role: "customer",
-    name: "Priya Sen",
-  },
-  "vendor@demo.com": {
-    password: "demo123",
-    role: "vendor",
-    name: "Ratan Kumar",
-    store: "Bishnupur Crafts House",
-  },
-};
+// const demoAccounts = {
+//   "customer@demo.com": {
+//     password: "demo123",
+//     role: "customer",
+//     name: "Priya Sen",
+//   },
+//   "vendor@demo.com": {
+//     password: "demo123",
+//     role: "vendor",
+//     name: "Ratan Kumar",
+//     store: "Bishnupur Crafts House",
+//   },
+// };
 
 // ============================================================
 // COMPONENTS
@@ -742,7 +742,7 @@ export default function App() {
       // setError(err.message);
       console.error("Login error:", err);
     } finally {
-      // setLoading(false);
+      // setLoading(false);  
     }
   };
 
@@ -1024,7 +1024,6 @@ export default function App() {
               onToggleWish={toggleWishlist}
               allProducts={allProducts}
               WB_DISTRICTS={WB_DISTRICTS}
-              catOptions={catOptions}
             />
           }
         />
