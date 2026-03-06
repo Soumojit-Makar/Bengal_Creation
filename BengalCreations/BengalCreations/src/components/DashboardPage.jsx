@@ -130,7 +130,7 @@ function DashboardPage({
         const uploadedUrl = await uploadImage(file);
         formData.append("images", uploadedUrl);
       }
-      
+           console.log(formData.get("images"));
   
       const res = await fetch(`${API}/products`, {
         method: "POST",
