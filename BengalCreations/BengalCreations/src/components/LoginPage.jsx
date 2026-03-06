@@ -131,7 +131,7 @@ const registerVendor = async () => {
       panCard: await uploadImage(reg.panCard),
       otherDoc: reg.otherDoc ? await uploadImage(reg.otherDoc) : null,
     };
-
+    console.log(vendorData)
     const res = await fetch(`${API}/vendors/register`, {
       method: "POST",
       headers: {
