@@ -24,7 +24,7 @@ function DashboardPage({
   const [form, setForm] = useState({
     name: "",
     price: "",
-    originPrice:"",
+    originPrice: "",
     stock: "",
     district: "",
     desc: "",
@@ -96,53 +96,52 @@ function DashboardPage({
         onShowToast("⚠️ You can upload maximum 5 images only.");
         return;
       }
-
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("price", form.price);
-      formData.append("originalPrice", form.originPrice);
-      formData.append("stock", form.stock);
-      formData.append("category", selectedCat._id);
-      formData.append("district", form.district);
-      formData.append("description", form.desc);
-
-      // FIX 3: parse JSON and safely get _id
-       const localRaw = localStorage.getItem("sm_user");
-    const localUser = localRaw ? JSON.parse(localRaw) : null;
-
-    if (localUser?._id) {
-      formData.append("vendor", localUser._id);
-    }
-    
-      // console.log(data.getAll());
-      console.log(formData.get("name"));
-      console.log(formData.get("price"));
-      console.log(formData.get("originalPrice"));
-      console.log(formData.get("stock"));
-      console.log(formData.get("category"));
-      console.log(formData.get("district"));
-      console.log(formData.get("description"));
-      console.log(formData.get("images"));
-
-      const imageUrl=[]
-
-      // FIX 4: use imageFiles (File objects), not images (blob URLs)
+            const localRaw = localStorage.getItem("sm_user");
+      const localUser = localRaw ? JSON.parse(localRaw) : null;
+      const imageUrl = [];
       for (const file of imageFiles) {
         const uploadedUrl = await uploadImage(file);
-        formData.append("images", uploadedUrl);
+        imageUrl.push(uploadedUrl)
       }
-           console.log(formData.get("images"));
-  
+      formData = {
+        name: form.name,
+        price: form.price,
+        originalPrice: form.originPrice,
+        stock: form.stock,
+        category: selectedCat._id,
+        district: form.district,
+        description: form.desc,
+        vendor: localUser._id,
+        images:imageUrl
+      };
+
+      // FIX 3: parse JSON and safely get _id
+
+      // console.log(data.getAll());
+      // console.log(formData.get("name"));
+      // console.log(formData.get("price"));
+      // console.log(formData.get("originalPrice"));
+      // console.log(formData.get("stock"));
+      // console.log(formData.get("category"));
+      // console.log(formData.get("district"));
+      // console.log(formData.get("description"));
+      // console.log(formData.get("images"));
+
+      
+
+      // FIX 4: use imageFiles (File objects), not images (blob URLs)
+      
+
       const res = await fetch(`${API}/products`, {
         method: "POST",
         body: formData,
       });
       // console.log(res)
       const data = await res.json();
-     
-    console.log(data)
 
-     onShowToast("Product Added Successfully !!");
+      console.log(data);
+
+      onShowToast("Product Added Successfully !!");
     } catch (err) {
       console.error("Error saving product:", err);
       onShowToast("⚠️ Something went wrong. Please try again.");
@@ -150,9 +149,7 @@ function DashboardPage({
       resetForm();
       setActiveTab("myproducts");
     }
-  }
-  ;
-
+  };
   const deleteProduct = (i) => {
     if (window.confirm("Remove this product?")) {
       const copy = [...dashProducts];
@@ -659,7 +656,7 @@ function DashboardPage({
                         }
                       />
                     </div>
-                     <div>
+                    <div>
                       <label
                         style={{
                           fontSize: 13,
@@ -676,7 +673,10 @@ function DashboardPage({
                         placeholder="e.g. 1200"
                         value={form.originPrice}
                         onChange={(e) =>
-                          setForm((f) => ({ ...f, originPrice: e.target.value }))
+                          setForm((f) => ({
+                            ...f,
+                            originPrice: e.target.value,
+                          }))
                         }
                       />
                     </div>
