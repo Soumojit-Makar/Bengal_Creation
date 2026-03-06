@@ -96,12 +96,12 @@ function DashboardPage({
         onShowToast("⚠️ You can upload maximum 5 images only.");
         return;
       }
-            const localRaw = localStorage.getItem("sm_user");
+      const localRaw = localStorage.getItem("sm_user");
       const localUser = localRaw ? JSON.parse(localRaw) : null;
       const imageUrl = [];
       for (const file of imageFiles) {
         const uploadedUrl = await uploadImage(file);
-        imageUrl.push(uploadedUrl)
+        imageUrl.push(uploadedUrl);
       }
       const formData = {
         name: form.name,
@@ -112,7 +112,7 @@ function DashboardPage({
         district: form.district,
         description: form.desc,
         vendor: localUser._id,
-        images:imageUrl
+        images: imageUrl,
       };
 
       // FIX 3: parse JSON and safely get _id
@@ -127,13 +127,13 @@ function DashboardPage({
       // console.log(formData.get("description"));
       // console.log(formData.get("images"));
 
-      
-
       // FIX 4: use imageFiles (File objects), not images (blob URLs)
-      
 
       const res = await fetch(`${API}/products`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
       // console.log(res)
