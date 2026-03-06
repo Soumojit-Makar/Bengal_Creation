@@ -9,7 +9,7 @@ router.post(
   async (req, res) => {
     try {
       console.log("Request body:", req.body);
-      console.log("Cloudinary files:", req.cloudinaryFiles);
+      // console.log("Cloudinary files:", req.cloudinaryFiles);
 
       // Parse numeric values
       req.body.price = parseFloat(req.body.price);
@@ -46,7 +46,7 @@ router.post(
         stock: req.body.stock,
         category: req.body.category,
         vendor: req.body.vendor,
-        images: req.body.images,
+        images: req.body,
       });
 
       await product.save();
