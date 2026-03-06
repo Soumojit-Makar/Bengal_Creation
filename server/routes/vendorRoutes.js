@@ -9,48 +9,75 @@ const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 
 // REGISTER VENDOR WITH DOCUMENTS
+router.post(
+  "/register",
+  async (req, res) => {
+    try {
 
-router.post("/register", async (req, res) => {
-  try {
-    const {
-      name,
-      email,
-      phone,
-      logo,
-      banner,
-      tradeLicense,
-      panCard,
-      aadhaarCard
-    } = req.body;
+      // // Check mandatory docs
+      // if (!req.cloudinaryFiles?.tradeLicense?.[0] || 
+      //     !req.cloudinaryFiles?.aadhaarCard?.[0] || 
+      //     !req.cloudinaryFiles?.panCard?.[0]) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     msg: "Trade Licence, Aadhaar, PAN are mandatory",
+      //   });
+      // }
 
-    const vendor = new Vendor({
-      name,
-      email,
-      phone,
-      logo,        // cloudinary link
-      banner,      // cloudinary link
-      documents: {
-        tradeLicense,
-        panCard,
-        aadhaarCard
-      }
-    });
+      // Extract Cloudinary URLs
+      // const getUrl = (field) => req.cloudinaryFiles?.[field]?.[0]?.url;
 
-    await vendor.save();
+      // Hash password
+      const hashed = await bcrypt.hash(req.body.password, 10);
+      
+      // Generate vendor ID
+      const vendorId = "VEND-" + new Date().getFullYear() + 
+                      uuidv4().substring(0, 6).toUpperCase();
 
-    res.status(201).json({
-      success: true,
-      message: "Vendor registered",
-      vendor
-    });
+      // Create vendor object
+      const vendor = new Vendor({
+        vendorId,
+        name: req.body.name,
+        shopName: req.body.shopName,
+        email: req.body.email,
+        password: hashed,
+        phone: req.body.phone,
+        address: req.body.address,
+        description: req.body.description,
+        logo: req.body.logo,
+        banner: req.body.banner,
+        documents: {
+          tradeLicense: req.body.tradeLicense,
+          aadhaarCard: req.body.aadhaarCard,
+          panCard: req.body.panCard,
+          otherDoc: req.body.otherDoc,
+        },
+        isVerified: false // Default to unverified
+      });
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+      console.log("Saving vendor...");
+      await vendor.save();
+
+      // Remove password from response
+      const safeVendor = vendor.toObject();
+      delete safeVendor.password;
+
+      res.status(201).json({ 
+        success: true,
+        msg: "Vendor Registered Successfully", 
+        vendor: safeVendor 
+      });
+
+    } catch (err) {
+      console.error("Vendor registration error:", err);
+      res.status(500).json({ 
+        success: false,
+        error: err.message,
+        msg: "Failed to register vendor" 
+      });
+    }
   }
-});
+)
 // UPDATE VENDOR
 router.put("/:id", async (req, res) => {
   try {
