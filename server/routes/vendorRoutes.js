@@ -10,7 +10,7 @@ const jwt = require("jsonwebtoken");
 
 // REGISTER VENDOR WITH DOCUMENTS
 router.post(
-  "/register")
+  "/register",
   async (req, res) => {
     try {
       console.log("Files received:", req.files ? Object.keys(req.files) : "No files");
@@ -79,7 +79,7 @@ router.post(
       });
     }
   }
-
+)
 // UPDATE VENDOR
 router.put("/:id", async (req, res) => {
   try {
