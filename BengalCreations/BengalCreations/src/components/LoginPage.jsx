@@ -111,45 +111,48 @@ const [error, setError] = useState("");
   };
   // VENDOR REGISTER (MULTIPART)
 const registerVendor = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const formData = new FormData();
+    const vendorData = {
+      name: reg.name,
+      shopName: reg.store,
+      email: reg.email,
+      phone: reg.phone,
+      password: reg.password,
+      description: reg.description,
+      address: reg.address,
 
-      formData.append("name",reg.name)
-      formData.append("shopName",reg.store)
-      formData.append("password",reg.password)
-      formData.append("phone",reg.phone)
-      formData.append("description",reg.description)
-      formData.append("logo", await uploadImage( reg.logo))
-      formData.append("banner", await uploadImage(  reg.banner))
-      formData.append("address",reg.address)
-      formData.append("tradeLicense",await uploadImage( reg.tradeLicense))
-      formData.append("aadhaarCard",await uploadImage( reg.aadhaarCard))
-      formData.append("panCard",await uploadImage( reg.panCard))
-      formData.append("otherDoc",await uploadImage( reg.otherDoc))
-      formData.append("email",reg.email)
+      logo: await uploadImage(reg.logo),
+      banner: await uploadImage(reg.banner),
 
+      tradeLicense: await uploadImage(reg.tradeLicense),
+      aadhaarCard: await uploadImage(reg.aadhaarCard),
+      panCard: await uploadImage(reg.panCard),
+      otherDoc: reg.otherDoc ? await uploadImage(reg.otherDoc) : null,
+    };
 
-      const res = await fetch(`${API}/vendors/register`, {
-        method: "POST",
-        body: formData,
-      });
+    const res = await fetch(`${API}/vendors/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(vendorData),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
 
-      alert("Vendor Registered! Waiting for approval.");
+    showToast("Vendor Registered! Waiting for approval.");
+    setAuthMode("signin");
 
-      showToast("Vendor Registered! Waiting for approval.")
-      setAuthMode("signin");
-    } catch (err) {
-      setError(err.message);
-      console.error("Registration error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    setError(err.message);
+    console.error("Registration error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   // FILE HANDLER
   const setFile = (name, file) =>
     setReg((r) => ({ ...r, [name]: file }));
