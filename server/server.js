@@ -36,7 +36,7 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      if (origin.includes("vercel.app") || origin.includes("localhost")) {
+      if (origin.includes("vercel.app") || origin.includes("localhost") || origin.includes("bengalcreations.in")) {
         return callback(null, true);
       }
       callback(new Error("Not allowed by CORS"));
