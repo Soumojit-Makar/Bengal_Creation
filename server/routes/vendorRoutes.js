@@ -10,32 +10,24 @@ const jwt = require("jsonwebtoken");
 
 // REGISTER VENDOR WITH DOCUMENTS
 router.post(
-  "/register",
-  cloudinaryUploadArray([
-    { name: "tradeLicense", maxCount: 1 },
-    { name: "aadhaarCard", maxCount: 1 },
-    { name: "panCard", maxCount: 1 },
-    { name: "otherDoc", maxCount: 1 },
-    { name: "logo", maxCount: 1 },
-    { name: "banner", maxCount: 1 },
-  ]),
+  "/register"),
   async (req, res) => {
     try {
       console.log("Files received:", req.files ? Object.keys(req.files) : "No files");
       console.log("Cloudinary files:", req.cloudinaryFiles);
 
-      // Check mandatory docs
-      if (!req.cloudinaryFiles?.tradeLicense?.[0] || 
-          !req.cloudinaryFiles?.aadhaarCard?.[0] || 
-          !req.cloudinaryFiles?.panCard?.[0]) {
-        return res.status(400).json({
-          success: false,
-          msg: "Trade Licence, Aadhaar, PAN are mandatory",
-        });
-      }
+      // // Check mandatory docs
+      // if (!req.cloudinaryFiles?.tradeLicense?.[0] || 
+      //     !req.cloudinaryFiles?.aadhaarCard?.[0] || 
+      //     !req.cloudinaryFiles?.panCard?.[0]) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     msg: "Trade Licence, Aadhaar, PAN are mandatory",
+      //   });
+      // }
 
       // Extract Cloudinary URLs
-      const getUrl = (field) => req.cloudinaryFiles?.[field]?.[0]?.url;
+      // const getUrl = (field) => req.cloudinaryFiles?.[field]?.[0]?.url;
 
       // Hash password
       const hashed = await bcrypt.hash(req.body.password, 10);
@@ -54,13 +46,13 @@ router.post(
         phone: req.body.phone,
         address: req.body.address,
         description: req.body.description,
-        logo: getUrl('logo'),
-        banner: getUrl('banner'),
+        logo: req.body.logo,
+        banner: req.body.banner,
         documents: {
-          tradeLicense: getUrl('tradeLicense'),
-          aadhaarCard: getUrl('aadhaarCard'),
-          panCard: getUrl('panCard'),
-          otherDoc: getUrl('otherDoc'),
+          tradeLicense: req.body.tradeLicense,
+          aadhaarCard: req.body.aadhaarCard,
+          panCard: req.body.panCard,
+          otherDoc: req.body.otherDoc,
         },
         isVerified: false // Default to unverified
       });
@@ -87,7 +79,6 @@ router.post(
       });
     }
   }
-);
 
 // UPDATE VENDOR
 router.put("/:id", async (req, res) => {

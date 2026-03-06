@@ -6,7 +6,6 @@ const { cloudinaryUpload, cloudinaryUploadFields } = require("../middleware/uplo
 // CREATE PRODUCT
 router.post(
   "/",
-  cloudinaryUploadFields([{ name: "images", maxCount: 5 }]), // Using fields, not array
   async (req, res) => {
     try {
       console.log("Request body:", req.body);
@@ -26,16 +25,16 @@ router.post(
       }
 
       // Get image URLs from Cloudinary
-      const imageUrls = req.cloudinaryFiles.images.map(file => file.url);
-      console.log("Image URLs:", imageUrls);
+      // const imageUrls = req.cloudinaryFiles.images.map(file => file.url);
+      // console.log("Image URLs:", imageUrls);
 
       // Validate file types (Cloudinary handles this, but we can add additional check)
-      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-      for (let file of req.cloudinaryFiles.images) {
-        if (file.format && !['png', 'jpg', 'jpeg'].includes(file.format.toLowerCase())) {
-          return res.status(400).json({ msg: "Only PNG, JPG, JPEG allowed" });
-        }
-      }
+      // const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      // for (let file of req.cloudinaryFiles.images) {
+      //   if (file.format && !['png', 'jpg', 'jpeg'].includes(file.format.toLowerCase())) {
+      //     return res.status(400).json({ msg: "Only PNG, JPG, JPEG allowed" });
+      //   }
+      // }
 
       // Create product
       const product = new Product({
@@ -47,7 +46,7 @@ router.post(
         stock: req.body.stock,
         category: req.body.category,
         vendor: req.body.vendor,
-        images: imageUrls,
+        images: req.body.images,
       });
 
       await product.save();

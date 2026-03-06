@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { uploadImage } from "../service/cloudinary";
 const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 function DashboardPage({
   currentUser,
@@ -23,6 +24,7 @@ function DashboardPage({
   const [form, setForm] = useState({
     name: "",
     price: "",
+    originPrice:"",
     stock: "",
     district: "",
     desc: "",
@@ -98,7 +100,7 @@ function DashboardPage({
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("price", form.price);
-      formData.append("orginalPrice", form.price);
+      formData.append("orginalPrice", form.originPrice);
       formData.append("stock", form.stock);
       formData.append("category", selectedCat._id);
       formData.append("district", form.district);
@@ -124,9 +126,10 @@ function DashboardPage({
 
 
       // FIX 4: use imageFiles (File objects), not images (blob URLs)
-      imageFiles.forEach((file) => {
-        formData.append("images", file);
-      });
+      for (const file of imageFiles) {
+        const uploadedUrl = await uploadImage(file);
+        formData.append("images", uploadedUrl);
+      }
       
   
       const res = await fetch(`${API}/products`, {
@@ -652,6 +655,27 @@ function DashboardPage({
                         value={form.price}
                         onChange={(e) =>
                           setForm((f) => ({ ...f, price: e.target.value }))
+                        }
+                      />
+                    </div>
+                     <div>
+                      <label
+                        style={{
+                          fontSize: 13,
+                          color: "var(--text-muted)",
+                          display: "block",
+                          marginBottom: 6,
+                        }}
+                      >
+                        💰 Original Price (₹)
+                      </label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        placeholder="e.g. 1200"
+                        value={form.originPrice}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, originPrice: e.target.value }))
                         }
                       />
                     </div>

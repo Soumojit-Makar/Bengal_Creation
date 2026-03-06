@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { uploadImage } from "../service/cloudinary";
+
 const API = import.meta.env.VITE_API || "http://localhost:5000/api";
 function LoginPage({ onLogin,showToast }) {
 const [loading, setLoading] = useState(false);
@@ -119,13 +121,13 @@ const registerVendor = async () => {
       formData.append("password",reg.password)
       formData.append("phone",reg.phone)
       formData.append("description",reg.description)
-      formData.append("logo",reg.logo)
-      formData.append("banner",reg.banner)
+      formData.append("logo", await uploadImage( reg.logo))
+      formData.append("banner", await uploadImage(  reg.banner))
       formData.append("address",reg.address)
-      formData.append("tradeLicense",reg.tradeLicense)
-      formData.append("aadhaarCard",reg.aadhaarCard)
-      formData.append("panCard",reg.panCard)
-      formData.append("otherDoc",reg.otherDoc)
+      formData.append("tradeLicense",await uploadImage( reg.tradeLicense))
+      formData.append("aadhaarCard",await uploadImage( reg.aadhaarCard))
+      formData.append("panCard",await uploadImage( reg.panCard))
+      formData.append("otherDoc",await uploadImage( reg.otherDoc))
       formData.append("email",reg.email)
 
 
