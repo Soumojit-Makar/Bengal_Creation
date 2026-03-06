@@ -35,8 +35,9 @@ router.post(
                       uuidv4().substring(0, 6).toUpperCase();
 
       // Create vendor object
+      console.log(req.body)
       const vendor = new Vendor({
-        vendorId,
+        vendorId: vendorId,
         name: req.body.name,
         shopName: req.body.shopName,
         email: req.body.email,
