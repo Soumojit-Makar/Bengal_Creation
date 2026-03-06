@@ -1539,6 +1539,7 @@ footer {
   .nav-top {
     flex-wrap: wrap;
     padding: 12px 16px;
+    font-family: 'Cinzel', serif;
   }
   .shop-layout {
     grid-template-columns: 1fr;
