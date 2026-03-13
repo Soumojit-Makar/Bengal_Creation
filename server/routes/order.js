@@ -11,9 +11,9 @@ const Address = require("../models/address");
 
 
 router.post("/", async (req, res) => {
-  const { addressId } = req.body;
+  const { addressId,user_id } = req.body;
 
-  const cart = await Cart.findOne({ customer: req.user.id });
+  const cart = await Cart.findOne({ customer: user_id });
   if (!cart) return res.status(400).json({ msg: "Cart empty" });
 
   const address = await Address.findOne({
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
   await order.save();
   await Cart.findOneAndDelete({ customer: req.user.id });
 
-  res.json({ msg: "Order placed", order });
+  res.json( order );
 });
 
 // GET BY USER

@@ -7,7 +7,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
   const [payment, setPayment] = useState("upi");
   const [ordered, setOrdered] = useState(false);
   const [orderId, setOrderId] = useState("");
-
+  const [address_Id,setAddress_Id]=useState(null);
   const subtotal = cart.reduce((s, p) => s + p.price * (p.quantity || 1), 0);
   const tax = Math.round(subtotal * 0.05);
 //  console.log(cart)
@@ -27,14 +27,16 @@ const handlePlace = async () => {
     }
 
     const totalAmount = subtotal + tax;
+    const user= JSON.parse(localStorage.getItem("sm_user") || "null")
 
     // 1️⃣ Create order in backend database
     const orderRes = await axios.post(`${API}/orders`, {
-      items: cart,
-      totalAmount: totalAmount,
-      address: `${form.name}, ${form.address}, ${form.city} – ${form.pin}`,
-      paymentMethod: payment
-    });
+      body:{
+        addressId:address_Id,
+        user_id:user._id
+      }
+    }
+    );
 
     const orderId = orderRes.data._id;
 
@@ -122,7 +124,9 @@ const handlePlace = async () => {
       <button className="btn-gold" onClick={() => navigate("/orders")}>📦 Track My Order</button>
     </div>
   );
-  
+  const addAddress= async()=>{
+    
+  }
 
   return (
     <div>

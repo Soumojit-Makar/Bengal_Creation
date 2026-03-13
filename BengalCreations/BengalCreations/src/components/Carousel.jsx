@@ -40,11 +40,11 @@ function Carousel({ title, products, onShowProduct }) {
         </div>
         <button className="carousel-nav next" onClick={() => move(1)}>›</button>
       </div>
-      <div className="carousel-dots">
+      {/* <div className="carousel-dots">
         {Array.from({ length: pages }, (_, i) => (
           <div key={i} className="carousel-dot" style={{ width: i === idx ? 24 : 8, background: i === idx ? "var(--gold)" : "var(--border)" }} onClick={() => setIdx(i)} />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }
