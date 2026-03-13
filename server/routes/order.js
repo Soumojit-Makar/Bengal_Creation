@@ -9,7 +9,7 @@ const Address = require("../models/address");
 // CREATE ORDER
 
 router.post("/", async (req, res) => {
-  const { addressId, user_id } = req.body;
+  const { addressId, user_id ,PaymentMethod} = req.body;
 
   const cart = await Cart.findOne({ customer: user_id });
   if (!cart) return res.status(400).json({ msg: "Cart empty" });
@@ -47,6 +47,7 @@ router.post("/", async (req, res) => {
     items: orderItems,
     address:addressId,
     totalAmount: totalAmount,
+    paymentMethod:PaymentMethod
   });
 
   await order.save();

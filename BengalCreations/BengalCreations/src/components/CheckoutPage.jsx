@@ -35,6 +35,8 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         addressId: address_Id,
         user_id: user._id,
         items: cart,
+        PaymentMethod:"Online"
+
       });
 
       const orderId = orderRes.data._id;
@@ -242,7 +244,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
               Save Address
             </button>
           </div>
-          <div
+          {/* <div
             style={{
               background: "white",
               border: "1px solid var(--border)",
@@ -273,7 +275,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
                 <span style={{ fontSize: 14, fontWeight: 500 }}>{label}</span>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
         <div className="order-summary">
           <h3 style={{ color: "var(--maroon)", marginBottom: 20 }}>
