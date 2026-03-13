@@ -35,12 +35,13 @@ router.post("/", async (req, res) => {
     product.stock -= item.quantity;
     await product.save();
   }
-
+  const tax = Math.round(cart.totalAmount * 0.05);
+  const totalAmount = cart.totalAmount + tax;
   const order = new Order({
     customer: req.user.id,
     items: cart.items,
     address,
-    totalAmount: cart.totalAmount,
+    totalAmount:  totalAmount,
   });
 
   await order.save();

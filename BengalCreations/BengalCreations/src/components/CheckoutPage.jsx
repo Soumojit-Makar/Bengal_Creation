@@ -24,25 +24,12 @@ function CheckoutPage({ cart, onPlaceOrder }) {
   const API = import.meta.env.VITE_API || "http://localhost:5000/api";
   const handlePlace = async () => {
     try {
-      if (
-        !form.name ||
-        !form.phone ||
-        !form.address ||
-        !form.city ||
-        !form.pin
-      ) {
-        alert("Please fill all required fields");
-        return;
-      }
-
-      if (!/^\d{6}$/.test(form.pin)) {
-        alert("Please enter a valid 6-digit PIN code");
-        return;
-      }
-
       const totalAmount = subtotal + tax;
       const user = JSON.parse(localStorage.getItem("sm_user") || "null");
-
+      if (!address_Id) {
+        alert("Please select or add a delivery address");
+        return;
+      }
       // 1️⃣ Create order in backend database
       const orderRes = await axios.post(`${API}/orders`, {
         addressId: address_Id,
@@ -102,13 +89,23 @@ function CheckoutPage({ cart, onPlaceOrder }) {
     }
   };
   const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      document.body.appendChild(script);
-    });
-  };
+  return new Promise((resolve) => {
+
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+
+    document.body.appendChild(script);
+
+  });
+};
   if (ordered)
     return (
       <div style={{ textAlign: "center", padding: "80px 20px" }}>
