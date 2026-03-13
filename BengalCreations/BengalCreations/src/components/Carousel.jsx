@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 
 function Carousel({ title, products, onShowProduct }) {
