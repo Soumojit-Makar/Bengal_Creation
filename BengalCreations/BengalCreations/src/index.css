@@ -1881,4 +1881,7 @@ footer {
     transform: none !important;
     display: flex;
   }
+  .carousel-wrapper{
+    margin: 0px;
+  }
 }
