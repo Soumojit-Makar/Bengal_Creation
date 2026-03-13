@@ -1597,7 +1597,7 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
-
+console.log("KEY:", process.env.RAZORPAY_KEY);
 // For local development
 if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {
