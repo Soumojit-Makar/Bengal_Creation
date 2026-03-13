@@ -9,14 +9,17 @@ const Address = require("../models/address");
 // CREATE ORDER
 
 router.post("/", async (req, res) => {
+  console.log(req.body)
   const { addressId, user_id, PaymentMethod } = req.body;
+  
+   console.log("USER ID:", user_id);
 
   const cart = await Cart.findOne({ customer: user_id });
-  if (!cart) {
+if (!cart) {
     console.log(cart)
     return res.status(400).json({ msg: "Cart empty" });
   }
-
+  console.log("CART FOUND:", cart);
   const address = await Address.findOne({
     _id: addressId,
     customer: user_id,
