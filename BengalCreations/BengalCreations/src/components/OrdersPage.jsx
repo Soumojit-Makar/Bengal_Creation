@@ -26,7 +26,7 @@ function OrdersPage({ userId }) {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API}/user/${userId}`);
+      const res = await fetch(`${API}/orders/user/${userId}`);
       const data = await res.json();
       setOrders(data);
     } catch (err) {
