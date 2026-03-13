@@ -1064,7 +1064,7 @@ export default function App() {
           path="/checkout"
           element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} />}
         />
-        <Route path="/orders" element={<OrdersPage orders={orders} />} />
+        <Route path="/orders" element={<OrdersPage userId={currentUser._id} />} />
         <Route
           path="/login"
           element={<LoginPage onLogin={handleLogin} showToast={showToast} />}
