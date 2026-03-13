@@ -6,12 +6,10 @@ const Product = require("../models/product");
 const Address = require("../models/address");
 // const auth = require("../middleware/customerAuth");
 
-
 // CREATE ORDER
 
-
 router.post("/", async (req, res) => {
-  const { addressId,user_id } = req.body;
+  const { addressId, user_id } = req.body;
 
   const cart = await Cart.findOne({ customer: user_id });
   if (!cart) return res.status(400).json({ msg: "Cart empty" });
@@ -24,9 +22,10 @@ router.post("/", async (req, res) => {
   if (!address) return res.status(404).json({ msg: "Address not found" });
 
   // INVENTORY CHECK
-  for (let item of cart.items) {
+  for (const item of cart.items) {
     const product = await Product.findById(item.product);
-
+    if (!product)
+    return res.status(404).json({ msg: "Product not found" });
     if (product.stock < item.quantity)
       return res.status(400).json({
         msg: product.name + " out of stock",
@@ -37,17 +36,23 @@ router.post("/", async (req, res) => {
   }
   const tax = Math.round(cart.totalAmount * 0.05);
   const totalAmount = cart.totalAmount + tax;
+  const orderItems = cart.items.map((item) => ({
+    product: item.product,
+    vendor: item.vendorId,
+    quantity: item.quantity,
+    price: item.price,
+  }));
   const order = new Order({
-    customer: user_id,
-    items: cart.items,
-    address,
-    totalAmount:  totalAmount,
+    user: user_id,
+    items: orderItems,
+    address:addressId,
+    totalAmount: totalAmount,
   });
 
   await order.save();
   await Cart.findOneAndDelete({ customer: user_id });
 
-  res.json( order );
+  res.json(order);
 });
 
 // GET BY USER
