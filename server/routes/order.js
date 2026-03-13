@@ -9,10 +9,13 @@ const Address = require("../models/address");
 // CREATE ORDER
 
 router.post("/", async (req, res) => {
-  const { addressId, user_id ,PaymentMethod} = req.body;
+  const { addressId, user_id, PaymentMethod } = req.body;
 
   const cart = await Cart.findOne({ customer: user_id });
-  if (!cart) return res.status(400).json({ msg: "Cart empty" });
+  if (!cart) {
+    console.log(cart)
+    return res.status(400).json({ msg: "Cart empty" });
+  }
 
   const address = await Address.findOne({
     _id: addressId,
@@ -24,8 +27,7 @@ router.post("/", async (req, res) => {
   // INVENTORY CHECK
   for (const item of cart.items) {
     const product = await Product.findById(item.product);
-    if (!product)
-    return res.status(404).json({ msg: "Product not found" });
+    if (!product) return res.status(404).json({ msg: "Product not found" });
     if (product.stock < item.quantity)
       return res.status(400).json({
         msg: product.name + " out of stock",
@@ -45,9 +47,9 @@ router.post("/", async (req, res) => {
   const order = new Order({
     user: user_id,
     items: orderItems,
-    address:addressId,
+    address: addressId,
     totalAmount: totalAmount,
-    paymentMethod:PaymentMethod
+    paymentMethod: PaymentMethod,
   });
 
   await order.save();

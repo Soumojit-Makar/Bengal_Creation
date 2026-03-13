@@ -25,12 +25,18 @@ function CheckoutPage({ cart, onPlaceOrder }) {
   const handlePlace = async () => {
     try {
       const totalAmount = subtotal + tax;
-      const user = JSON.parse(localStorage.getItem("sm_user") || "null");
+      const user = JSON.parse(localStorage.getItem("sm_user"));
       if (!address_Id) {
         alert("Please select or add a delivery address");
         return;
       }
+      if (!user) {
+         console.log(user)
+        alert("Please select or add a delivery address");
+        return;
+      }
       // 1️⃣ Create order in backend database
+      console.log(user)
       const orderRes = await axios.post(`${API}/orders`, {
         addressId: address_Id,
         user_id: user._id,
