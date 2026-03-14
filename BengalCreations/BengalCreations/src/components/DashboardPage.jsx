@@ -51,7 +51,7 @@ function DashboardPage({
 
       setAllProducts(transformed);
 
-      console.log("HI", allProducts)
+      console.log("HI", transformed)
       setDashProducts(allProducts)
       console.log("Hello",dashProducts)
     } catch (err) {
