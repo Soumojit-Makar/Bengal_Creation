@@ -52,7 +52,7 @@ function DashboardPage({
       setAllProducts(transformed);
 
       console.log("HI", transformed)
-      setDashProducts(allProducts)
+      setDashProducts(transformed)
       console.log("Hello",dashProducts)
     } catch (err) {
       console.error("Fetch products error:", err);
