@@ -11,6 +11,10 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   const [selectedEmoji, setSelectedEmoji] = useState("🥻");
   const [selectedCat, setSelectedCat] = useState(null);
   const [catOptions, setCatOptions] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const totalRevenue = orders.reduce((sum, order) => {
+  return sum + (order?.amount || 0);
+}, 0);
   const getAllProduct = async () => {
     try {
       const res = await fetch(`${API}/products/vendor/${currentUser._id}`, {
@@ -53,24 +57,24 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
     }
   };
   const getVendorOrders = async () => {
-  try {
-    const res = await fetch(`${API}/orders/vendor/${currentUser._id}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API}/orders/vendor/${currentUser._id}`);
+      const data = await res.json();
 
-    const formatted = data.map((order) => ({
-      id: order._id,
-      product: order.items?.[0]?.product?.name || "Product",
-      customer: order.user?.name || "Customer",
-      amount: order.totalAmount,
-      date: new Date(order.createdAt).toLocaleDateString(),
-      status: order.status,
-    }));
+      const formatted = data.map((order) => ({
+        id: order._id,
+        product: order.items?.[0]?.product?.name || "Product",
+        customer: order.user?.name || "Customer",
+        amount: order.totalAmount,
+        date: new Date(order.createdAt).toLocaleDateString(),
+        status: order.status,
+      }));
 
-    setOrders(formatted);
-  } catch (err) {
-    console.error("Fetch orders error:", err);
-  }
-};
+      setOrders(formatted);
+    } catch (err) {
+      console.error("Fetch orders error:", err);
+    }
+  };
   const getAllCategory = async () => {
     try {
       // setLoading(true);
@@ -84,6 +88,9 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
       // setCategoryTiles(data)
       // data.vendor.role = "vendor";
       setCatOptions(data);
+      if (data.length > 0) {
+        setSelectedCat(data[0]);
+      }
     } catch (err) {
       // setError(err.message);
       console.error("Login error:", err);
@@ -92,7 +99,6 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
     }
   };
   useEffect(() => {
-    setSelectedCat(catOptions[0]);
     getAllProduct();
     getAllCategory();
     getVendorOrders();
@@ -109,7 +115,6 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   });
 
   const [editIdx, setEditIdx] = useState(null);
-  const [orders] = useState([]);
 
   const resetForm = async () => {
     setForm({ name: "", price: "", stock: "", district: "", desc: "" });
@@ -248,7 +253,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
               color: "var(--gold-light)",
             }}
           >
-            🏪 {currentUser?.store || "My Store"}
+            🏪 {currentUser?.shopName || "My Store"}
           </h2>
           <p
             style={{
@@ -257,7 +262,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
               marginTop: 2,
             }}
           >
-            📍 West Bengal · ⭐ Verified Seller
+            📍 {currentUser?.address}
           </p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
@@ -284,9 +289,9 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
       {/* Stats */}
       <div className="dash-stats">
         {[
-          ["₹42,850", "Revenue"],
+          [`${totalRevenue.toLocaleString()}}`, "Revenue"],
           [dashProducts.length, "Products"],
-          ["128", "Orders"],
+          [orders.length, "Orders"],
           ["4.8 ★", "Rating", true],
         ].map(([val, label, gold]) => (
           <div className="dash-stat" key={label}>
