@@ -19,7 +19,7 @@ function DashboardPage({
   const [catOptions, setCatOptions] = useState([]);
   const getAllProduct = async () => {
     try {
-      const res = await fetch(`${API}/products//vendor/${currentUser._id}`, {
+      const res = await fetch(`${API}/products/vendor/${currentUser._id}`, {
         method: "GET",
       });
       const data = await res.json();
