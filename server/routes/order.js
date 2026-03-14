@@ -4,6 +4,7 @@ const Order = require("../models/order");
 const Cart = require("../models/Cart");
 const Product = require("../models/product");
 const Address = require("../models/address");
+const Customer = require("../models/Customer");
 // const auth = require("../middleware/customerAuth");
 
 // CREATE ORDER
