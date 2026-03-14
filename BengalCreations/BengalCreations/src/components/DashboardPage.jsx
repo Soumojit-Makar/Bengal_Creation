@@ -5,8 +5,6 @@ function DashboardPage({
   currentUser,
   onShowToast,
   allProducts,
-  emojiOptions,
-  catOptions,
   WB_DISTRICTS,
 }) {
   const [images, setImages] = useState([]);
@@ -18,11 +16,32 @@ function DashboardPage({
   );
   const [selectedEmoji, setSelectedEmoji] = useState("🥻");
   const [selectedCat, setSelectedCat] = useState(null);
+  const [catOptions, setCatOptions] = useState([]);
+    const getAllCategory = async () => {
+    try {
+      // setLoading(true);
 
+      const res = await fetch(`${API}/categories`, {
+        method: "GET",
+      });
+      console.log(res);
+      const data = await res.json();
+      console.log(data);
+      // setCategoryTiles(data)
+      // data.vendor.role = "vendor";
+      setCatOptions(data);
+    } catch (err) {
+      // setError(err.message);
+      console.error("Login error:", err);
+    } finally {
+      // setLoading(false);
+    }
+  };
   useEffect(() => {
     setSelectedCat(catOptions[0]);
+    getAllCategory()
   }, []);
-
+  
   const [form, setForm] = useState({
     name: "",
     price: "",
