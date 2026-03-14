@@ -3,6 +3,7 @@ const router = express.Router();
 const Cart = require("../models/Cart");
 const Product = require("../models/product");
 const auth = require("../middleware/customerAuth");
+const Vendor = require("../models/vendor");
 
 
 // ADD TO CART
@@ -118,6 +119,28 @@ router.patch("/remove/:productId",  async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
+  }
+});
+// all user details with products
+router.get("/", async (req, res) => {
+  try {
+    const carts = await Cart.find()
+      .populate("customer")
+      .populate("items.product");
+
+    const Vendor = require("../models/vendor");
+
+    for (let cart of carts) {
+      for (let item of cart.items) {
+        if (item.vendorId) {
+          item.vendor = await Vendor.findById(item.vendorId);
+        }
+      }
+    }
+
+    res.json(carts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 module.exports = router;
