@@ -23,7 +23,7 @@ function DashboardPage({
         method: "GET",
       });
       const data = await res.json();
-      // console.log(data);
+      console.log(data);
 
       // Transform server data to expected format
       const transformed = data.map((item) => ({
