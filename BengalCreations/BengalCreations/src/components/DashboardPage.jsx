@@ -1,19 +1,13 @@
 import { useEffect, useState } from "react";
 import { uploadImage } from "../service/cloudinary";
 const API = import.meta.env.VITE_API || "http://localhost:5000/api";
-function DashboardPage({
-  currentUser,
-  onShowToast,
-  WB_DISTRICTS,
-}) {
+function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   const [images, setImages] = useState([]);
   const [imageFiles, setImageFiles] = useState([]); // FIX 1: store actual File objects
   const [hoverImg, setHoverImg] = useState(null);
   const [activeTab, setActiveTab] = useState("myproducts");
-  const [dashProducts, setDashProducts] = useState(
-   []
-  );
-  const [allProducts,setAllProducts]=useState([]);
+  const [dashProducts, setDashProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [selectedEmoji, setSelectedEmoji] = useState("🥻");
   const [selectedCat, setSelectedCat] = useState(null);
   const [catOptions, setCatOptions] = useState([]);
@@ -51,14 +45,33 @@ function DashboardPage({
 
       setAllProducts(transformed);
 
-      console.log("HI", transformed)
-      setDashProducts(transformed)
-      console.log("Hello",dashProducts)
+      console.log("HI", transformed);
+      setDashProducts(transformed);
+      console.log("Hello", dashProducts);
     } catch (err) {
       console.error("Fetch products error:", err);
     }
   };
-    const getAllCategory = async () => {
+  const getVendorOrders = async () => {
+  try {
+    const res = await fetch(`${API}/orders/vendor/${currentUser._id}`);
+    const data = await res.json();
+
+    const formatted = data.map((order) => ({
+      id: order._id,
+      product: order.items?.[0]?.product?.name || "Product",
+      customer: order.user?.name || "Customer",
+      amount: order.totalAmount,
+      date: new Date(order.createdAt).toLocaleDateString(),
+      status: order.status,
+    }));
+
+    setOrders(formatted);
+  } catch (err) {
+    console.error("Fetch orders error:", err);
+  }
+};
+  const getAllCategory = async () => {
     try {
       // setLoading(true);
 
@@ -80,10 +93,11 @@ function DashboardPage({
   };
   useEffect(() => {
     setSelectedCat(catOptions[0]);
-    getAllProduct()
-    getAllCategory()
+    getAllProduct();
+    getAllCategory();
+    getVendorOrders();
   }, []);
-  
+
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -95,32 +109,7 @@ function DashboardPage({
   });
 
   const [editIdx, setEditIdx] = useState(null);
-  const [orders] = useState([
-    {
-      id: "ORD-2401",
-      product: "Baluchari Silk Saree",
-      customer: "Rekha Sharma",
-      amount: 4500,
-      date: "2025-04-12",
-      status: "delivered",
-    },
-    {
-      id: "ORD-2402",
-      product: "Bishnupur Terracotta Horse",
-      customer: "Arnab Das",
-      amount: 850,
-      date: "2025-04-14",
-      status: "shipped",
-    },
-    {
-      id: "ORD-2403",
-      product: "Dokra Dancing Girl",
-      customer: "Priyanka Roy",
-      amount: 1200,
-      date: "2025-04-15",
-      status: "pending",
-    },
-  ]);
+  const [orders] = useState([]);
 
   const resetForm = async () => {
     setForm({ name: "", price: "", stock: "", district: "", desc: "" });
@@ -202,7 +191,7 @@ function DashboardPage({
       // console.log(res)
       const data = await res.json();
 
-      console.log(data);
+      // console.log(data);
 
       onShowToast("Product Added Successfully !!");
     } catch (err) {
@@ -236,7 +225,7 @@ function DashboardPage({
     setEditIdx(i);
     setActiveTab("addproduct");
   };
-console.log(catOptions)
+  console.log(catOptions);
   return (
     <div>
       <div className="dash-header">
