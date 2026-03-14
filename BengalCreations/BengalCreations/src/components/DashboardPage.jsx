@@ -13,7 +13,9 @@ function DashboardPage({
   const [imageFiles, setImageFiles] = useState([]); // FIX 1: store actual File objects
   const [hoverImg, setHoverImg] = useState(null);
   const [activeTab, setActiveTab] = useState("myproducts");
-  const [dashProducts, setDashProducts] = useState(allProducts.slice(0, 6));
+  const [dashProducts, setDashProducts] = useState(
+    Array.isArray(allProducts) ? allProducts.slice(0, 6) : [],
+  );
   const [selectedEmoji, setSelectedEmoji] = useState("🥻");
   const [selectedCat, setSelectedCat] = useState(null);
 
@@ -571,41 +573,42 @@ function DashboardPage({
                       gap: 10,
                     }}
                   >
-                    {catOptions.map((c) => (
-                      <div
-                        key={c._id}
-                        onClick={() => setSelectedCat(c)}
-                        style={{
-                          padding: "12px 8px",
-                          borderRadius: 10,
-                          cursor: "pointer",
-                          // FIX 6: compare by _id since selectedCat is an object
-                          border:
-                            selectedCat?._id === c._id
-                              ? "2px solid var(--gold)"
-                              : "2px solid var(--border)",
-                          textAlign: "center",
-                          background:
-                            selectedCat?._id === c._id
-                              ? "var(--gold-pale)"
-                              : "white",
-                          transition: "all 0.2s",
-                        }}
-                      >
-                        <div style={{ fontSize: 24, marginBottom: 4 }}>
-                          {c.emoji}
-                        </div>
+                    {Array.isArray(catOptions) &&
+                      catOptions.map((c) => (
                         <div
+                          key={c._id}
+                          onClick={() => setSelectedCat(c)}
                           style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color: "var(--text)",
+                            padding: "12px 8px",
+                            borderRadius: 10,
+                            cursor: "pointer",
+                            // FIX 6: compare by _id since selectedCat is an object
+                            border:
+                              selectedCat?._id === c._id
+                                ? "2px solid var(--gold)"
+                                : "2px solid var(--border)",
+                            textAlign: "center",
+                            background:
+                              selectedCat?._id === c._id
+                                ? "var(--gold-pale)"
+                                : "white",
+                            transition: "all 0.2s",
                           }}
                         >
-                          {c.name}
+                          <div style={{ fontSize: 24, marginBottom: 4 }}>
+                            {c.emoji}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "var(--text)",
+                            }}
+                          >
+                            {c.name}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
 
@@ -731,9 +734,8 @@ function DashboardPage({
                     }
                   >
                     <option value="">Select your district</option>
-                    {WB_DISTRICTS.map((d) => (
-                      <option key={d}>📍 {d}</option>
-                    ))}
+                    {Array.isArray(WB_DISTRICTS) &&
+                      WB_DISTRICTS.map((d) => <option key={d}>📍 {d}</option>)}
                   </select>
                 </div>
 
