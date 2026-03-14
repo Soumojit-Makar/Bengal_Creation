@@ -61,7 +61,7 @@ function AboutPage() {
             padding: 32,
             border: "1px solid var(--border)",
             boxShadow: "var(--shadow)",
-            textAlign: "center",
+            // textAlign: "center",
           }}
         >
           <h3
