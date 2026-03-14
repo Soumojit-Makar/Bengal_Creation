@@ -5,7 +5,6 @@ const Product = require("../models/product");
 const auth = require("../middleware/customerAuth");
 const Vendor = require("../models/vendor");
 
-
 // ADD TO CART
 router.post("/add", async (req, res) => {
   try {
@@ -30,7 +29,7 @@ router.post("/add", async (req, res) => {
 
     // 🔥 CHECK IF PRODUCT ALREADY EXISTS
     const existingItem = cart.items.find(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (existingItem) {
@@ -57,7 +56,6 @@ router.post("/add", async (req, res) => {
     await cart.populate("items.product");
 
     res.json({ msg: "Cart updated", cart });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
@@ -65,26 +63,23 @@ router.post("/add", async (req, res) => {
 });
 // GET CART
 
+router.get("/:id", async (req, res) => {
+  const cart = await Cart.findOne({ customer: req.params.id }).populate(
+    "items.product",
+  );
 
-router.get("/:id",  async (req, res) => {
-  const cart = await Cart.findOne({ customer: req.params.id })
-    .populate("items.product");
-  
   res.json(cart);
 });
 
-
-
 // CLEAR CART
-
 
 router.delete("/clear", auth, async (req, res) => {
   await Cart.findOneAndDelete({ customer: req.body.user.id });
   res.json({ msg: "Cart cleared" });
 });
-router.patch("/remove/:productId",  async (req, res) => {
+router.patch("/remove/:productId", async (req, res) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const { productId } = req.params;
     const userId = req.body.user.id;
 
@@ -96,7 +91,7 @@ router.patch("/remove/:productId",  async (req, res) => {
 
     // 🔥 Find item to remove
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (itemIndex === -1) {
@@ -109,13 +104,12 @@ router.patch("/remove/:productId",  async (req, res) => {
     // 🔥 Recalculate totalAmount
     cart.totalAmount = cart.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
-      0
+      0,
     );
 
     await cart.save();
 
     res.json({ msg: "Item removed", cart });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
@@ -126,17 +120,13 @@ router.get("/", async (req, res) => {
   try {
     const carts = await Cart.find()
       .populate("customer")
-      .populate("items.product");
-
-    const Vendor = require("../models/vendor");
-
-    for (let cart of carts) {
-      for (let item of cart.items) {
-        if (item.vendorId) {
-          item.vendor = await Vendor.findById(item.vendorId);
+      .populate({
+        path: "items.product",
+        populate: {
+          path: "vendor",
+          model: "Vendor"
         }
-      }
-    }
+      });
 
     res.json(carts);
   } catch (err) {
