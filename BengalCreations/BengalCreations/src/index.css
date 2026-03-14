@@ -1900,4 +1900,7 @@ footer {
   .carousel-card {
     width: 100%;
   } */
+   .footer-grid{
+    display: none;
+   }
 }
