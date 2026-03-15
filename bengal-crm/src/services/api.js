@@ -47,7 +47,7 @@ export const normaliseCart = (cart) => {
       };
     }),
     totalAmount: cart.totalAmount || 0,
-    createdAt: cart.createdAt,
+    createdAt: cart.updatedAt,
     district: (() => {
       // Pick district from first item's product
       const first = cart.items?.[0]?.product;
