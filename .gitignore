@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 *.env
+*.env.example
+.gitignore
 node_modules/
 .env
 server/uploads/
