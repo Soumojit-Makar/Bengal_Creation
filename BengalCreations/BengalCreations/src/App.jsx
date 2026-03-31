@@ -32,6 +32,9 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { WB_DISTRICTS, CATEGORY_TILES, EMOJI_OPTIONS } from "./constants/data";
 import { fetchAllProducts, fetchAllCategories } from "./api/api";
 import Footer from "./components/Footer";
+import DeliveryPolicy from "./pages/DeliveryPolicy";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import RefundPolicy from "./components/RefundPolicy";
 
 
 export default function App() {
@@ -157,6 +160,9 @@ export default function App() {
           />
         } />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/delivery-policy" element={<DeliveryPolicy />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/contact" element={<ContactPage onShowToast={showToast} />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} showToast={showToast} />} />
         <Route path="/vendor" element={

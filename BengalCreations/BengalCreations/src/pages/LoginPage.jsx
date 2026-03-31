@@ -32,8 +32,7 @@ function LoginPage({ onLogin, showToast }) {
     otherDoc: null,
   });
   const [showPwd, setShowPwd] = useState({ si: false, reg: false });
-  const [addresses, setAddresses] = useState([]);
-  const [addressId, setAddressId] = useState(null);
+
   const setFile = (name, file) => setReg((r) => ({ ...r, [name]: file }));
   const [form, setForm] = useState({
     address: "",
@@ -45,7 +44,7 @@ function LoginPage({ onLogin, showToast }) {
   });
   const addAddress = async ({ user_id }) => {
     try {
-      console.log("🔥 addAddress called", user_id);
+      // console.log("🔥 addAddress called", user_id);
       if (!user_id) {
         console.log("User ID is required to add address");
         return;
@@ -61,9 +60,7 @@ function LoginPage({ onLogin, showToast }) {
         houseNo: form.houseNo,
         landmark: form.landmark,
       });
-      setAddresses((prev) => [...prev, saved]);
-      setAddressId(saved._id);
-      alert("Address saved!");
+      // alert("Address saved!");
     } catch (err) {
       console.error(err);
     }
@@ -120,11 +117,11 @@ function LoginPage({ onLogin, showToast }) {
         });
         console.log("REGISTER RESPONSE:", data);
         const user_id = data.user._id;
-        console.log("Registered user ID:", user_id);
+        // console.log("Registered user ID:", user_id);
         console.log(data);
         await addAddress({ user_id });
         showToast("Customer Registered!");
-        setAuthMode("signin");
+        // setAuthMode("signin");
       } else {
         const vendorData = {
           name: reg.name,

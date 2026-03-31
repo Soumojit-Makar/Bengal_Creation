@@ -81,17 +81,17 @@ function Footer({  navigate }) {
             <p onClick={() => navigate("/contact")}>Contact</p>
             {/* <p>Press</p> */}
             <p onClick={() => navigate("/login")}>Sell With Us</p>
-            <p>Careers</p>
+            {/* <p>Careers</p> */}
           </div>
 
           {/* Help */}
           <div className="footer-col">
             <h4 onClick={()=>navigate("/contact")} >Help</h4>
-            <p>Privacy Policy</p>
-            <p>Terms of Service</p>
-            <p>Shipping Policy</p>
-            <p>Returns</p>
-            <p>FAQ</p>
+            <p onClick={() => navigate("/privacy-policy")}>Privacy Policy</p>
+            {/* <p>Terms of Service</p> */}
+            <p onClick={()=>navigate("/delivery-policy")} >Delivery Policy</p>
+            <p onClick={()=> navigate("/refund-policy")}>Returns</p>
+            {/* <p>FAQ</p> */}
           </div>
         </div>
         <div className="payment-section">
