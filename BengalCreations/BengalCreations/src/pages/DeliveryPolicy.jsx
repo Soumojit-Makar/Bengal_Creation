@@ -89,8 +89,6 @@ By using our services, you agree to this Delivery Policy.`,
             fontStyle: "italic",
           }}
         >
-          Effective Date: [Insert Date]
-          <br />
           This Delivery Policy outlines the terms and conditions related to
           delivery of orders placed on Digital Indian (digitalindian.co.in),
           including food delivery services (Tiffin Hub) and e-commerce products.

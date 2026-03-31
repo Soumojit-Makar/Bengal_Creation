@@ -89,8 +89,6 @@ Phone: +91-9830640814`,
             fontStyle: "italic",
           }}
         >
-          Effective Date: [Insert Date]
-          <br />
           Welcome to Digital Indian (digitalindian.co.in). We value your privacy
           and are committed to protecting your personal information. This Privacy
           Policy explains how we collect, use, and safeguard your data when you

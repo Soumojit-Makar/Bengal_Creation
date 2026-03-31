@@ -74,8 +74,6 @@ By using our services, you agree to this Refund & Cancellation Policy.`,
             fontStyle: "italic",
           }}
         >
-          Effective Date: [Insert Date]
-          <br />
           This Refund & Cancellation Policy applies to all services offered by
           Digital Indian (digitalindian.co.in), including food delivery,
           e-commerce products, training programs, and digital services.
