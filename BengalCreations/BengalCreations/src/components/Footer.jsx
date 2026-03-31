@@ -76,17 +76,17 @@ function Footer({  navigate }) {
 
           {/* Company */}
           <div className="footer-col">
-            <h4>Company</h4>
+            <h4> <a href="http://digitalindian.co.in/" target="_blank" rel="noopener noreferrer"></a>Company</h4>
             <p onClick={() => navigate("/about")}>About Us</p>
             <p onClick={() => navigate("/contact")}>Contact</p>
-            <p>Press</p>
-            <p onClick={() => navigate("/vendor")}>Sell With Us</p>
+            {/* <p>Press</p> */}
+            <p onClick={() => navigate("/login")}>Sell With Us</p>
             <p>Careers</p>
           </div>
 
           {/* Help */}
           <div className="footer-col">
-            <h4>Help</h4>
+            <h4 onClick={()=>navigate("/contact")} >Help</h4>
             <p>Privacy Policy</p>
             <p>Terms of Service</p>
             <p>Shipping Policy</p>

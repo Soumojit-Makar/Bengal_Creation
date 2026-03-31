@@ -14,7 +14,7 @@ const registerCustomer = async (req, res) => {
     user = new Customer({ name, email, phone, password: hashed });
     await user.save();
 
-    res.json({ msg: "Customer Registered" });
+    res.json({ msg: "Customer Registered", user });
   } catch (err) {
     res.status(500).json({ msg: "error", error: err.message });
   }

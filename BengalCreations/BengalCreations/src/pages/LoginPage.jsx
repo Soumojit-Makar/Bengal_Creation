@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import { uploadImage } from "../utils/cloudinary";
 import {
   loginCustomer as apiLoginCustomer,
   loginVendor as apiLoginVendor,
   registerCustomer as apiRegisterCustomer,
   registerVendor as apiRegisterVendor,
+  createAddress,
 } from "../api/api";
 
 function LoginPage({ onLogin, showToast }) {
@@ -31,9 +32,42 @@ function LoginPage({ onLogin, showToast }) {
     otherDoc: null,
   });
   const [showPwd, setShowPwd] = useState({ si: false, reg: false });
-
+  const [addresses, setAddresses] = useState([]);
+  const [addressId, setAddressId] = useState(null);
   const setFile = (name, file) => setReg((r) => ({ ...r, [name]: file }));
-
+  const [form, setForm] = useState({
+    address: "",
+    city: "",
+    pin: "",
+    state: "",
+    houseNo: "",
+    landmark: "",
+  });
+  const addAddress = async ({ user_id }) => {
+    try {
+      console.log("🔥 addAddress called", user_id);
+      if (!user_id) {
+        console.log("User ID is required to add address");
+        return;
+      }
+      const saved = await createAddress({
+        customer: user_id,
+        fullName: reg.name,
+        phone: reg.phone,
+        pincode: form.pin,
+        city: form.city,
+        area: form.address,
+        state: form.state,
+        houseNo: form.houseNo,
+        landmark: form.landmark,
+      });
+      setAddresses((prev) => [...prev, saved]);
+      setAddressId(saved._id);
+      alert("Address saved!");
+    } catch (err) {
+      console.error(err);
+    }
+  };
   // ── Sign In ──────────────────────────────────────────────────────────────────
   const doSignIn = async () => {
     if (!si.email || !si.password) {
@@ -78,12 +112,17 @@ function LoginPage({ onLogin, showToast }) {
       setLoading(true);
       setError("");
       if (role === "customer") {
-        await apiRegisterCustomer({
+        const data = await apiRegisterCustomer({
           name: reg.name,
           email: reg.email,
           phone: reg.phone,
           password: reg.password,
         });
+        console.log("REGISTER RESPONSE:", data);
+        const user_id = data.user._id;
+        console.log("Registered user ID:", user_id);
+        console.log(data);
+        await addAddress({ user_id });
         showToast("Customer Registered!");
         setAuthMode("signin");
       } else {
@@ -133,7 +172,10 @@ function LoginPage({ onLogin, showToast }) {
 
         {/* Role Tabs */}
         <div className="role-tabs">
-          {[["customer", "👤 Customer"], ["vendor", "🏪 Vendor"]].map(([r, label]) => (
+          {[
+            ["customer", "👤 Customer"],
+            ["vendor", "🏪 Vendor"],
+          ].map(([r, label]) => (
             <button
               key={r}
               className="role-tab"
@@ -150,7 +192,10 @@ function LoginPage({ onLogin, showToast }) {
 
         {/* Auth Mode Tabs */}
         <div className="auth-tabs">
-          {[["signin", "Sign In"], ["register", "Create Account"]].map(([m, label]) => (
+          {[
+            ["signin", "Sign In"],
+            ["register", "Create Account"],
+          ].map(([m, label]) => (
             <button
               key={m}
               className="auth-tab"
@@ -170,9 +215,19 @@ function LoginPage({ onLogin, showToast }) {
             <div>
               <h3>Welcome back</h3>
               <p>Sign in to your {role} account</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#6b5744",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
                     Email
                   </label>
                   <input
@@ -180,11 +235,21 @@ function LoginPage({ onLogin, showToast }) {
                     type="email"
                     placeholder="you@email.com"
                     value={si.email}
-                    onChange={(e) => setSi((s) => ({ ...s, email: e.target.value }))}
+                    onChange={(e) =>
+                      setSi((s) => ({ ...s, email: e.target.value }))
+                    }
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#6b5744",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
                     Password
                   </label>
                   <div className="login-input-wrap">
@@ -194,7 +259,9 @@ function LoginPage({ onLogin, showToast }) {
                       placeholder="Your password"
                       style={{ paddingRight: 48 }}
                       value={si.password}
-                      onChange={(e) => setSi((s) => ({ ...s, password: e.target.value }))}
+                      onChange={(e) =>
+                        setSi((s) => ({ ...s, password: e.target.value }))
+                      }
                       onKeyDown={(e) => e.key === "Enter" && doSignIn()}
                     />
                     <button
@@ -206,7 +273,11 @@ function LoginPage({ onLogin, showToast }) {
                     </button>
                   </div>
                 </div>
-                <button className="login-submit-btn" onClick={doSignIn} disabled={loading}>
+                <button
+                  className="login-submit-btn"
+                  onClick={doSignIn}
+                  disabled={loading}
+                >
                   {loading ? "Signing in…" : "Sign In →"}
                 </button>
               </div>
@@ -215,16 +286,41 @@ function LoginPage({ onLogin, showToast }) {
             <div>
               <h3>Create account</h3>
               <p>Join Bengal Creations as a {role}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 13 }}
+              >
                 {role === "vendor" && (
                   <>
                     {[
-                      ["store", "Store Name", "text", "e.g. Bishnupur Crafts House"],
-                      ["description", "Store Description", "textarea", "Briefly describe your store"],
-                      ["address", "Store Address", "textarea", "Enter your store's physical address"],
+                      [
+                        "store",
+                        "Store Name",
+                        "text",
+                        "e.g. Bishnupur Crafts House",
+                      ],
+                      [
+                        "description",
+                        "Store Description",
+                        "textarea",
+                        "Briefly describe your store",
+                      ],
+                      [
+                        "address",
+                        "Store Address",
+                        "textarea",
+                        "Enter your store's physical address",
+                      ],
                     ].map(([key, label, type, ph]) => (
                       <div key={key}>
-                        <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "#6b5744",
+                            display: "block",
+                            marginBottom: 6,
+                          }}
+                        >
                           {label} <span className="req">*</span>
                         </label>
                         {type === "textarea" ? (
@@ -232,7 +328,9 @@ function LoginPage({ onLogin, showToast }) {
                             className="form-control"
                             placeholder={ph}
                             value={reg[key]}
-                            onChange={(e) => setReg((r) => ({ ...r, [key]: e.target.value }))}
+                            onChange={(e) =>
+                              setReg((r) => ({ ...r, [key]: e.target.value }))
+                            }
                             rows={3}
                           />
                         ) : (
@@ -240,22 +338,50 @@ function LoginPage({ onLogin, showToast }) {
                             className="form-control"
                             placeholder={ph}
                             value={reg[key]}
-                            onChange={(e) => setReg((r) => ({ ...r, [key]: e.target.value }))}
+                            onChange={(e) =>
+                              setReg((r) => ({ ...r, [key]: e.target.value }))
+                            }
                           />
                         )}
                       </div>
                     ))}
                     <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "#6b5744",
+                          display: "block",
+                          marginBottom: 6,
+                        }}
+                      >
                         Upload Store Logo
                       </label>
-                      <input className="form-control" type="file" accept="image/*" onChange={(e) => setFile("logo", e.target.files[0])} />
+                      <input
+                        className="form-control"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setFile("logo", e.target.files[0])}
+                      />
                     </div>
                     <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "#6b5744",
+                          display: "block",
+                          marginBottom: 6,
+                        }}
+                      >
                         Upload Store Banner
                       </label>
-                      <input className="form-control" type="file" accept="image/*" onChange={(e) => setFile("banner", e.target.files[0])} />
+                      <input
+                        className="form-control"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setFile("banner", e.target.files[0])}
+                      />
                     </div>
                   </>
                 )}
@@ -266,7 +392,15 @@ function LoginPage({ onLogin, showToast }) {
                   ["phone", "Mobile", "tel", "10-digit number"],
                 ].map(([key, label, type, ph]) => (
                   <div key={key}>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#6b5744",
+                        display: "block",
+                        marginBottom: 6,
+                      }}
+                    >
                       {label} <span className="req">*</span>
                     </label>
                     <input
@@ -274,13 +408,23 @@ function LoginPage({ onLogin, showToast }) {
                       type={type}
                       placeholder={ph}
                       value={reg[key]}
-                      onChange={(e) => setReg((r) => ({ ...r, [key]: e.target.value }))}
+                      onChange={(e) =>
+                        setReg((r) => ({ ...r, [key]: e.target.value }))
+                      }
                     />
                   </div>
                 ))}
 
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#6b5744",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
                     Password <span className="req">*</span>
                   </label>
                   <div className="login-input-wrap">
@@ -290,7 +434,9 @@ function LoginPage({ onLogin, showToast }) {
                       placeholder="Minimum 6 characters"
                       style={{ paddingRight: 48 }}
                       value={reg.password}
-                      onChange={(e) => setReg((r) => ({ ...r, password: e.target.value }))}
+                      onChange={(e) =>
+                        setReg((r) => ({ ...r, password: e.target.value }))
+                      }
                     />
                     <button
                       type="button"
@@ -300,32 +446,106 @@ function LoginPage({ onLogin, showToast }) {
                       👁
                     </button>
                   </div>
+                  <div className="form-grid">
+                    {[
+                      ["houseNo", "House / Flat / Office No.", "text"],
+                      ["address", "Street Address / Colony", "text"],
+                      ["landmark", "Landmark (Optional)", "text"],
+                      ["city", "City", "text"],
+                      ["state", "State", "text"],
+                      ["pin", "PIN Code", "text"],
+                    ].map(([key, label, type]) => (
+                      <div
+                        key={key}
+                        className={`form-group${key === "address" ? " full" : ""}`}
+                      >
+                        {key === "landmark" ? (
+                          <label>{label} </label>
+                        ) : (
+                          <label>
+                            {label} <span className="req">*</span>
+                          </label>
+                        )}
+                        <input
+                          className="form-control"
+                          type={type}
+                          value={form[key]}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, [key]: e.target.value }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {role === "vendor" && (
                   <>
                     {[
-                      ["tradeLicense", "Trade License Doc (only PDF)", "application/pdf"],
-                      ["aadhaarCard", "Aadhaar Card (only PDF)", "application/pdf"],
+                      [
+                        "tradeLicense",
+                        "Trade License Doc (only PDF)",
+                        "application/pdf",
+                      ],
+                      [
+                        "aadhaarCard",
+                        "Aadhaar Card (only PDF)",
+                        "application/pdf",
+                      ],
                       ["panCard", "PAN Card (only PDF)", "application/pdf"],
-                      ["otherDoc", "Other Document (optional)", "application/pdf,image/*"],
+                      [
+                        "otherDoc",
+                        "Other Document (optional)",
+                        "application/pdf,image/*",
+                      ],
                     ].map(([key, label, accept]) => (
                       <div key={key}>
-                        <label style={{ fontSize: 12, fontWeight: 600, color: "#6b5744", display: "block", marginBottom: 6 }}>
-                          {label}{key !== "otherDoc" && <span className="req"> *</span>}
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "#6b5744",
+                            display: "block",
+                            marginBottom: 6,
+                          }}
+                        >
+                          {label}
+                          {key !== "otherDoc" && (
+                            <span className="req"> *</span>
+                          )}
                         </label>
-                        <input className="form-control" type="file" accept={accept} onChange={(e) => setFile(key, e.target.files[0])} />
+                        <input
+                          className="form-control"
+                          type="file"
+                          accept={accept}
+                          onChange={(e) => setFile(key, e.target.files[0])}
+                        />
                       </div>
                     ))}
-                    <div style={{ fontSize: 11, color: "#6b5744", background: "#f5e4b8", padding: 10, borderRadius: 4 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6b5744",
+                        background: "#f5e4b8",
+                        padding: 10,
+                        borderRadius: 4,
+                      }}
+                    >
                       <strong>Vendor Registration Notice:</strong>
                       <br />
-                      By creating a vendor account, you agree to provide authentic products and accurate information. Your account will be reviewed and approved by our team before you can start selling.
+                      By creating a vendor account, you agree to provide
+                      authentic products and accurate information. Your account
+                      will be reviewed and approved by our team before you can
+                      start selling.
                     </div>
                   </>
                 )}
 
-                <button className="login-submit-btn" onClick={doRegister} disabled={loading}>
+                <button
+                  className="login-submit-btn"
+                  onClick={doRegister}
+                  disabled={loading}
+                >
                   {loading ? "Creating…" : "Create Account →"}
                 </button>
               </div>
@@ -335,7 +555,13 @@ function LoginPage({ onLogin, showToast }) {
 
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <button
-            style={{ background: "transparent", border: "none", color: "rgba(245,228,184,0.5)", fontSize: 13, cursor: "pointer" }}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "rgba(245,228,184,0.5)",
+              fontSize: 13,
+              cursor: "pointer",
+            }}
             onClick={() => navigate("/")}
           >
             ← Back to Home
@@ -345,5 +571,13 @@ function LoginPage({ onLogin, showToast }) {
     </div>
   );
 }
-
+const saveBtn = {
+  marginTop: 10,
+  padding: "10px 16px",
+  background: "#800000",
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
 export default LoginPage;

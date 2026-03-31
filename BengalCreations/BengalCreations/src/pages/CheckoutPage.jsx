@@ -197,7 +197,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
                 ["pin",      "PIN Code",                    "text"],
               ].map(([key, label, type]) => (
                 <div key={key} className={`form-group${key === "address" ? " full" : ""}`}>
-                  <label>{label} <span className="req">*</span></label>
+                  {key === "landmark" ? <label>{label} </label>: <label>{label} <span className="req">*</span></label>}
                   <input
                     className="form-control"
                     type={type}
