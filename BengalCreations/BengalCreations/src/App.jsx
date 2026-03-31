@@ -33,8 +33,9 @@ import { WB_DISTRICTS, CATEGORY_TILES, EMOJI_OPTIONS } from "./constants/data";
 import { fetchAllProducts, fetchAllCategories } from "./api/api";
 import Footer from "./components/Footer";
 import DeliveryPolicy from "./pages/DeliveryPolicy";
-import PrivacyPolicy from "./components/PrivacyPolicy";
-import RefundPolicy from "./components/RefundPolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
+
 
 
 export default function App() {

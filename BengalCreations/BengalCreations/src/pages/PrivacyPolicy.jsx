@@ -73,8 +73,8 @@ To exercise these rights, contact us at the details below.`,
       title: "10. Contact Us",
       text: `Digital Indian
 Website: https://digitalindian.co.in
-Email: your-email@example.com
-Phone: +91-XXXXXXXXXX`,
+Email: info@digitalindian.co.in
+Phone: +91-9830640814`,
     },
   ];
 

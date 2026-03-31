@@ -51,8 +51,8 @@ The amount will be credited to the original payment method.`,
       title: "5. Contact for Refund Requests",
       text: `Digital Indian
 Website: https://digitalindian.co.in
-Email: your-email@example.com
-Phone: +91-XXXXXXXXXX`,
+Email: info@digitalindian.co.in
+Phone: +91-9830640814`,
     },
     {
       title: "6. Policy Updates",
