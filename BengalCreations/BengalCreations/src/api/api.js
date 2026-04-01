@@ -220,3 +220,86 @@ export const failPayment = async (orderId) => {
     body: JSON.stringify({ orderId }),
   });
 };
+export const addContactMessage = async (messageData) => {
+  const res = await fetch(`${API}/contact`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(messageData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to send message");
+  return data;
+};
+export const fetchContactMessages = async () => {
+  const res = await fetch(`${API}/contact/all`);
+  if (!res.ok) throw new Error("Failed to fetch contact messages");
+  return res.json();
+};
+
+
+// ─── Auth - Forgot / Reset / Change Password ──────────────────────────────────
+export const forgotPassword = async (email) => {
+  const res = await fetch(`${API}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to send reset email");
+  return data;
+};
+
+export const resetPassword = async (customerId, token, newPassword) => {
+  const res = await fetch(`${API}/auth/reset-password/${customerId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to reset password");
+  return data;
+};
+
+export const changePassword = async (customerId, currentPassword, newPassword) => {
+  const res = await fetch(`${API}/auth/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customerId, currentPassword, newPassword }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to change password");
+  return data;
+};
+
+// ─── Addresses (extended) ────────────────────────────────────────────────────
+export const updateAddress = async (addressId, addressData) => {
+  const res = await fetch(`${API}/addresses/${addressId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(addressData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to update address");
+  return data;
+};
+
+export const deleteAddress = async (addressId) => {
+  const res = await fetch(`${API}/addresses/${addressId}`, {
+    method: "DELETE",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to delete address");
+  return data;
+};
+
+// ─── Chatbot ─────────────────────────────────────────────────────────────────
+export const sendChatMessage = async (question, history = []) => {
+  const res = await fetch(`${API}/chatbot`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, history }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Chatbot error");
+  return data;
+};

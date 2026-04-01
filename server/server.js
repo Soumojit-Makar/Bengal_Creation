@@ -59,6 +59,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/webhook", webhookRoutes);
 app.use("/api/contact", require("./routes/contactRoutes"));
+app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({

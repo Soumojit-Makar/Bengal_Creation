@@ -110,6 +110,17 @@ function Navbar({
                     📦 My Orders
                   </div>
                 )}
+                {currentUser.role === "customer" && (
+                  <div
+                    className="user-dropdown-item"
+                    onClick={() => {
+                      navigate("/profile");
+                      setShowDropdown(false);
+                    }}
+                  >
+                    ⚙️ My Profile
+                  </div>
+                )}
                 <div
                   className="user-dropdown-item"
                   onClick={() => {

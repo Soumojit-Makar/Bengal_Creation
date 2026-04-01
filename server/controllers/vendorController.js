@@ -3,12 +3,13 @@ const Product = require("../models/product");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
-
 const registerVendor = async (req, res) => {
   try {
     const hashed = await bcrypt.hash(req.body.password, 10);
     const vendorId =
-      "VEND-" + new Date().getFullYear() + uuidv4().substring(0, 6).toUpperCase();
+      "VEND-" +
+      new Date().getFullYear() +
+      uuidv4().substring(0, 6).toUpperCase();
 
     console.log(req.body);
     const vendor = new Vendor({
@@ -61,14 +62,18 @@ const loginVendor = async (req, res) => {
     console.log("Vendor found:", vendor ? "Yes" : "No");
 
     if (!vendor) {
-      return res.status(400).json({ success: false, msg: "Invalid email or password" });
+      return res
+        .status(400)
+        .json({ success: false, msg: "Invalid email or password" });
     }
 
     const match = await bcrypt.compare(password, vendor.password);
     console.log("Password match:", match);
 
     if (!match) {
-      return res.status(400).json({ success: false, msg: "Invalid email or password" });
+      return res
+        .status(400)
+        .json({ success: false, msg: "Invalid email or password" });
     }
 
     if (!vendor.isVerified) {
@@ -79,15 +84,25 @@ const loginVendor = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: vendor._id, vendorId: vendor.vendorId, email: vendor.email, role: "vendor" },
+      {
+        id: vendor._id,
+        vendorId: vendor.vendorId,
+        email: vendor.email,
+        role: "vendor",
+      },
       process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: process.env.JWT_EXPIRE || "7d" }
+      { expiresIn: process.env.JWT_EXPIRE || "7d" },
     );
 
     const safeVendor = vendor.toObject();
     delete safeVendor.password;
 
-    res.json({ success: true, msg: "Login successful", token, vendor: safeVendor });
+    res.json({
+      success: true,
+      msg: "Login successful",
+      token,
+      vendor: safeVendor,
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, error: err.message });
@@ -126,7 +141,9 @@ const getAllVendors = async (req, res) => {
 
 const getVendorById = async (req, res) => {
   try {
-    const vendor = await Vendor.findOne({ vendorId: req.params.id }).select("-password");
+    const vendor = await Vendor.findOne({ vendorId: req.params.id }).select(
+      "-password",
+    );
     if (!vendor) {
       return res.status(404).json({ success: false, msg: "Vendor not found" });
     }
@@ -147,7 +164,7 @@ const updateVendor = async (req, res) => {
     const vendor = await Vendor.findOneAndUpdate(
       { vendorId: req.params.id },
       updateData,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password");
 
     if (!vendor) {
@@ -166,7 +183,7 @@ const verifyVendor = async (req, res) => {
     const vendor = await Vendor.findOneAndUpdate(
       { vendorId: req.params.id },
       { isVerified: true },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     if (!vendor) {
@@ -187,7 +204,10 @@ const deleteVendor = async (req, res) => {
       return res.status(404).json({ success: false, msg: "Vendor not found" });
     }
     await Product.deleteMany({ vendor: vendor._id });
-    res.json({ success: true, msg: "Vendor and associated products deleted successfully" });
+    res.json({
+      success: true,
+      msg: "Vendor and associated products deleted successfully",
+    });
   } catch (err) {
     console.error("Vendor deletion error:", err);
     res.status(500).json({ success: false, error: err.message });
@@ -255,22 +275,28 @@ const getVendorAnalytics = async (req, res) => {
       Vendor.countDocuments({ isVerified: false }),
       Product.countDocuments(),
     ]);
-    res.json({ success: true, analytics: { totalVendors, verified, pending, totalProducts } });
+    res.json({
+      success: true,
+      analytics: { totalVendors, verified, pending, totalProducts },
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
-const forgotPassword = async (req, res) => {  const { email } = req.body;
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
 
   const user = await Vendor.findOne({ email });
   if (!user) return res.status(400).json({ msg: "Invalid email" });
-  
-await sendEmail(
-  user.email,
-  "Password Reset Request",
-  `
-  <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
-    
+  const token = uuidv4();
+  const Token = require("../models/Token");
+  await Token.create({ email: user.email, token });
+  await sendEmail(
+    user.email,
+    "Password Reset Request",
+    `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+      
     <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
       
       <!-- Header -->
@@ -286,9 +312,8 @@ await sendEmail(
 
         <!-- Button -->
         <div style="text-align: center; margin-top: 25px;">
-          <a href="mailto:${email}" 
-             style="background: #ff4d4d; color: #fff; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-             Reset Password
+          <a href="${process.env.FRONTEND_URL}/reset-password/${user.vendorId}/${token}" style="background: #ff4d4d; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+            Reset Password
           </a>
         </div>
 
@@ -298,21 +323,29 @@ await sendEmail(
       </div>
     </div>
   </div>
-  `
-);
+  `,
+  );
 
-res.json({ msg: "Password reset email sent" });
-};  
+  res.json({ msg: "Password reset email sent" });
+};
 const resetPassword = async (req, res) => {
   const { vendorId } = req.params;
-  const { newPassword } = req.body;
-  
+  const { newPassword, token ,email} = req.body;
+  const Token = require("../models/Token");
+
   const vendor = await Vendor.findOne({ vendorId });
   if (!vendor) return res.status(400).json({ msg: "Invalid vendor" });
 
+  const tokenDoc = await Token.findOne({
+    email: email,
+    token: token,
+  });
+  if (!tokenDoc)
+    return res.status(400).json({ msg: "Invalid or expired token" });
+  await Token.deleteOne({ _id: tokenDoc._id });
+
   vendor.password = await bcrypt.hash(newPassword, 10);
   await vendor.save();
-
   res.json({ msg: "Password reset successful" });
 };
 module.exports = {

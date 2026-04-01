@@ -29,6 +29,16 @@ const getAddressesByCustomer = async (req, res) => {
   }
 };
 
+const updateAddress = async (req, res) => {
+  try {
+    const addr = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!addr) return res.status(404).json({ error: "Address not found" });
+    res.json(addr);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const deleteAddress = async (req, res) => {
   try {
     await Address.findByIdAndDelete(req.params.id);
@@ -38,4 +48,4 @@ const deleteAddress = async (req, res) => {
   }
 };
 
-module.exports = { addAddress, getAddressesByCustomer, deleteAddress };
+module.exports = { addAddress, getAddressesByCustomer, updateAddress, deleteAddress };

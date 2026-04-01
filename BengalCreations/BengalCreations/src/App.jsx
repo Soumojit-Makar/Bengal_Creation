@@ -11,6 +11,7 @@ import Navbar from "./components/NavBar";
 import CartPanel from "./components/CartPanel";
 import Toast from "./components/Toast";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Chatbot from "./components/Chatbot";
 
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
@@ -23,6 +24,8 @@ import VendorPage from "./pages/VendorPage";
 import DashboardPage from "./pages/DashboardPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import { useAuth } from "./context/AuthContext";
 import { useToast } from "./hooks/useToast";
@@ -35,8 +38,6 @@ import Footer from "./components/Footer";
 import DeliveryPolicy from "./pages/DeliveryPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
-
-
 
 export default function App() {
   const navigate = useNavigate();
@@ -109,10 +110,11 @@ export default function App() {
   }, [clearCart, showToast]);
 
   const isLoginPage = location.pathname === "/login";
+  const isResetPage = location.pathname.startsWith("/reset-password");
 
   return (
     <div className="bc-app">
-      {!isLoginPage && (
+      {!isLoginPage && !isResetPage && (
         <Navbar
           cart={cart}
           wishlist={wishlist}
@@ -121,6 +123,7 @@ export default function App() {
           onSearch={handleSearch}
           openLogin={() => navigate("/login")}
           doLogout={doLogout}
+          onProfile={() => navigate("/profile")}
         />
       )}
 
@@ -166,6 +169,7 @@ export default function App() {
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/contact" element={<ContactPage onShowToast={showToast} />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} showToast={showToast} />} />
+        <Route path="/reset-password/:customerId/:token" element={<ResetPasswordPage showToast={showToast} />} />
         <Route path="/vendor" element={
           <VendorPage onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} />
         } />
@@ -191,6 +195,11 @@ export default function App() {
             <OrdersPage userId={currentUser?._id ?? null} />
           </ProtectedRoute>
         } />
+        <Route path="/profile" element={
+          <ProtectedRoute role="customer">
+            <ProfilePage currentUser={currentUser} showToast={showToast} />
+          </ProtectedRoute>
+        } />
 
         {/* Vendor-only */}
         <Route path="/dashboard" element={
@@ -204,7 +213,11 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <Footer  navigate={navigate} />
+
+      <Footer navigate={navigate} />
+
+      {/* Chatbot - only shown to non-vendor users */}
+      {currentUser?.role !== "vendor" && <Chatbot />}
     </div>
   );
 }
