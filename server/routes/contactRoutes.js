@@ -31,3 +31,4 @@ router.get("/all", getContacts);
   #swagger.responses[200] = { description: 'All contact submissions', schema: [{ $ref: '#/definitions/Contact' }] }
   #swagger.responses[500] = { description: 'Server error' }
 */
+module.exports = router;
