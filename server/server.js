@@ -21,7 +21,7 @@ const { url } = require("inspector");
 
 const app = express();
 const port = process.env.PORT || 5000;
-
+require('dotenv').config();
 // CORS
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
 app.use(

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 let cachedDb = null;
-
+require('dotenv').config();
 const connectDB = async () => {
   if (cachedDb) {
     console.log("Using cached database connection");

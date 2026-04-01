@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/mail-sender");
 const Token = require("../models/Token");
 const { v4: uuidv4 } = require("uuid");
-
+require('dotenv').config();
 const registerCustomer = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;

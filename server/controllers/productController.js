@@ -1,6 +1,6 @@
 const Product = require("../models/product");
 const Vendor = require("../models/vendor");
-
+require('dotenv').config();
 const createProduct = async (req, res) => {
   try {
     console.log("Request body:", req.body);

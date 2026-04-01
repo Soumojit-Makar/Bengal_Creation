@@ -3,7 +3,7 @@ const Order = require("../models/order");
 const Cart = require("../models/Cart");
 const Product = require("../models/product");
 const Address = require("../models/address");
-
+require('dotenv').config();
 const createOrder = async (req, res) => {
   console.log(req.body);
   const { addressId, user_id, PaymentMethod } = req.body;
