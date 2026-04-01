@@ -260,7 +260,61 @@ const getVendorAnalytics = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+const forgotPassword = async (req, res) => {  const { email } = req.body;
 
+  const user = await Vendor.findOne({ email });
+  if (!user) return res.status(400).json({ msg: "Invalid email" });
+  
+await sendEmail(
+  user.email,
+  "Password Reset Request",
+  `
+  <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+    
+    <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+      
+      <!-- Header -->
+      <div style="background: #ff4d4d; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">🔐 Password Reset</h2>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 20px; color: #333;">
+        
+        <p style="font-size: 16px;">Hi <b>${user.name}</b>,</p>
+        <p style="font-size: 16px;">We received a request to reset your password. Click the button below to reset it:</p>
+
+        <!-- Button -->
+        <div style="text-align: center; margin-top: 25px;">
+          <a href="mailto:${email}" 
+             style="background: #ff4d4d; color: #fff; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+             Reset Password
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #777; margin-top: 30px;">
+          If you didn't request a password reset, please ignore this email.
+        </p>
+      </div>
+    </div>
+  </div>
+  `
+);
+
+res.json({ msg: "Password reset email sent" });
+};  
+const resetPassword = async (req, res) => {
+  const { vendorId } = req.params;
+  const { newPassword } = req.body;
+  
+  const vendor = await Vendor.findOne({ vendorId });
+  if (!vendor) return res.status(400).json({ msg: "Invalid vendor" });
+
+  vendor.password = await bcrypt.hash(newPassword, 10);
+  await vendor.save();
+
+  res.json({ msg: "Password reset successful" });
+};
 module.exports = {
   registerVendor,
   loginVendor,
@@ -273,4 +327,6 @@ module.exports = {
   getPendingVendors,
   searchVendors,
   getVendorAnalytics,
+  forgotPassword,
+  resetPassword,
 };

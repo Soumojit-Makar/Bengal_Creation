@@ -58,7 +58,7 @@ app.use("/api/auth", customerAuth);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/webhook", webhookRoutes);
-
+app.use("/api/contact", require("./routes/contactRoutes"));
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
@@ -79,6 +79,8 @@ app.get("/", (req, res) => {
       payment: "/api/payment",
       webhook: "/api/webhook",
       health: "/health",
+      contact: "/api/contact",
+      
     },
   });
 });

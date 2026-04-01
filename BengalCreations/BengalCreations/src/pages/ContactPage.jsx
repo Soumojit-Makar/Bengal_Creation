@@ -94,7 +94,9 @@ function ContactPage({ onShowToast }) {
                     setForm((f) => ({ ...f, subject: e.target.value }))
                   }
                 >
-                  <option value="">Select subject</option>
+                  <option value="" selected disabled>
+                    Select subject
+                  </option>
                   {[
                     "Order Issue",
                     "Product Query",

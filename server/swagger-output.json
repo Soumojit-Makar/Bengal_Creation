@@ -26,9 +26,43 @@
     { "name": "Addresses",  "description": "Customer addresses" },
     { "name": "Wishlist",   "description": "Customer wishlist" },
     { "name": "Payment",    "description": "Razorpay payment flow" },
-    { "name": "Webhooks",   "description": "Razorpay webhooks" }
+    { "name": "Webhooks",   "description": "Razorpay webhooks" },
+    { "name": "Contact",    "description": "Customer contact form" }
   ],
   "paths": {
+    "/api/contact": {
+      "post": {
+        "tags": ["Contact"],
+        "summary": "Submit a contact form message",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/ContactFormBody" }
+        }],
+        "responses": {
+          "200": { "description": "Message received" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/contact/all": {
+      "get": {
+        "tags": ["Contact"],
+        "summary": "Get all contact form submissions (admin)",
+        "responses": {
+          "200": { "description": "List of contact messages" }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "API health check",
+        "responses": {
+          "200": { "description": "API is healthy", "schema": { "example": { "status": "ok" } } }
+        }
+      }
+    },
+
     "/api/auth/register": {
       "post": {
         "tags": ["Auth"],

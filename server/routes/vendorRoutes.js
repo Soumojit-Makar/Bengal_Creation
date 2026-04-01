@@ -12,7 +12,9 @@ const {
   getPendingVendors,
   searchVendors,
   getVendorAnalytics,
+  resetPassword,
 } = require("../controllers/vendorController");
+const { forgotPassword } = require("../controllers/customerAuthController");
 
 router.post("/register", registerVendor);
 /*
@@ -117,6 +119,35 @@ router.get("/:vendorId/products", getVendorProducts);
   #swagger.parameters['vendorId'] = { in: 'path', required: true, type: 'string' }
   #swagger.responses[200] = { description: 'Vendor with products list' }
   #swagger.responses[404] = { description: 'Vendor not found' }
+*/
+
+router.post("/forgot-password", forgotPassword);
+/*
+  #swagger.tags = ['Vendors']
+  #swagger.summary = 'Vendor forgot password - send reset email'
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: {
+      email: 'string'
+    }
+  }
+  #swagger.responses[200] = { description: 'Password reset email sent' }
+*/
+router.post("/reset-password/:vendorId", resetPassword);
+/*
+  #swagger.tags = ['Vendors']
+  #swagger.summary = 'Reset vendor password'
+  #swagger.parameters['vendorId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: {
+      email: 'string',
+      newPassword: 'string'
+    }
+  }
+  #swagger.responses[200] = { description: 'Password reset email sent' }
 */
 
 module.exports = router;
