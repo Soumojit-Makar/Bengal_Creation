@@ -127,7 +127,12 @@ function HomePage({
       />
 
       {/* Per-Category Carousels */}
-      {CATEGORY_CAROUSELS.map((cat) => (
+      {
+      handloomSarees.length > 0 && dokraArt.length > 0 && juteProducts.length > 0 &&
+      terracottaCrafts.length > 0 && woodenHandicrafts.length > 0 && bengalSweets.length > 0 &&
+      
+      CATEGORY_CAROUSELS.map((cat) => (
+        cat &&(
         <Carousel
           key={cat}
           title={cat}
@@ -140,7 +145,7 @@ function HomePage({
                   }
           onShowProduct={(id) => navigate(`/product/${id}`)}
           loading={loading}
-        />
+        />)
       ))}
 
       {/* Footer */}
