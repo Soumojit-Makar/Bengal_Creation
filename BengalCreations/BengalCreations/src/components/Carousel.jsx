@@ -1,166 +1,168 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { cloudinaryResize } from "../utils/helpers";
 
-const CAR_VISIBLE = 5;
+const CARD_WIDTH   = 180;  // px per card (reduced)
+const CARD_GAP     = 14;
+const AUTO_MS      = 3500; // auto-advance interval
 
-function Carousel({ title, products, onShowProduct, loading }) {
-  const [idx, setIdx] = useState(0);
-  const startX = useRef(0);
-  const pages = Math.max(1, Math.ceil(products.length / CAR_VISIBLE));
+function SkeletonCard() {
+  return (
+    <div className="carousel-card skeleton-card" style={{ flex: "0 0 180px" }}>
+      <div className="skeleton-img" style={{ height: 160 }} />
+      <div className="carousel-card-body">
+        <div className="skeleton-line title" />
+        <div className="skeleton-line price" />
+        <div className="skeleton-line rating" />
+      </div>
+    </div>
+  );
+}
 
-  // Reset to first page whenever the product list changes
-  useEffect(() => { setIdx(0); }, [products]);
+function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 }) {
+  const [page,      setPage]      = useState(0);
+  const [paused,    setPaused]    = useState(false);
+  const startX     = useRef(0);
+  const timerRef   = useRef(null);
 
-  const move = (dir) => {
-    if (pages <= 1) return;
-    setIdx((i) => (i + dir + pages) % pages);
-  };
+  const totalPages = Math.max(1, Math.ceil((products?.length || 0) / visibleCount));
 
-  const handleTouchStart = (e) => {
-    startX.current = e.touches[0].clientX;
-  };
+  const goTo = useCallback((p) => {
+    setPage(((p % totalPages) + totalPages) % totalPages);
+  }, [totalPages]);
 
-  const handleTouchEnd = (e) => {
+  const move = useCallback((dir) => {
+    setPage((p) => ((p + dir + totalPages) % totalPages));
+  }, [totalPages]);
+
+  // Reset on product change
+  useEffect(() => { setPage(0); }, [products]);
+
+  // Auto-advance
+  useEffect(() => {
+    if (paused || loading || products?.length <= visibleCount) return;
+    timerRef.current = setInterval(() => move(1), AUTO_MS);
+    return () => clearInterval(timerRef.current);
+  }, [paused, loading, products, visibleCount, move]);
+
+  const handleTouchStart = (e) => { startX.current = e.touches[0].clientX; };
+  const handleTouchEnd   = (e) => {
     const diff = startX.current - e.changedTouches[0].clientX;
-    if (diff > 50) move(1);
+    if (diff > 50)  move(1);
     if (diff < -50) move(-1);
   };
+
+  const visibleOffset = page * visibleCount * (CARD_WIDTH + CARD_GAP);
 
   return (
     <div className="section alpona-bg">
       <h2 className="section-title">{title}</h2>
+
       <div
         className="carousel-wrapper"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <button className="carousel-nav prev" onClick={() => move(-1)}>
-          ‹
-        </button>
+        <button className="carousel-nav prev" onClick={() => move(-1)} aria-label="Previous">‹</button>
+
         <div className="carousel-track-outer">
           <div
             className="carousel-track"
-            style={{ transform: `translateX(-${idx * CAR_VISIBLE * 240}px)` }}
+            style={{ transform: `translateX(-${visibleOffset}px)`, gap: `${CARD_GAP}px` }}
           >
             {loading
-              ? Array.from({ length: CAR_VISIBLE }).map((_, i) => (
-                  <div className="carousel-card skeleton-card" key={i}>
-                    <div className="skeleton-img"></div>
-                    <div className="carousel-card-body">
-                      <div className="skeleton-line title"></div>
-                      <div className="skeleton-line price"></div>
-                      <div className="skeleton-line rating"></div>
-                    </div>
-                  </div>
-                ))
-              : products.map((p) => {
-                  const img = p?.images?.[0]?.url;
-                  const disc = Math.round((1 - p.price / p.original) * 100);
+              ? Array.from({ length: visibleCount }).map((_, i) => <SkeletonCard key={i} />)
+              : (products || []).map((p) => {
+                  const rawImg = p?.images?.[0]?.url || p?.thumb;
+                  const disc   = p.original > p.price ? Math.round((1 - p.price / p.original) * 100) : 0;
+
                   return (
                     <div
-                      className="carousel-card"
                       key={p.id}
+                      className="carousel-card"
+                      style={{ flex: `0 0 ${CARD_WIDTH}px` }}
                       onClick={() => onShowProduct(p.id)}
                     >
-                      <div className="carousel-card-img">
-                        {p.thumb ? (
-                          img ? (
-                            <img
-                              src={cloudinaryResize(img, 400)}
-                              srcSet={`
-                                ${cloudinaryResize(p.images?.[0]?.url, 200)} 200w,
-                                ${cloudinaryResize(p.images?.[0]?.url, 400)} 400w,
-                                ${cloudinaryResize(p.images?.[0]?.url, 800)} 800w
-                              `}
-                              sizes="(max-width:480px) 200px, (max-width:768px) 400px, 800px"
-                              alt={p.name}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <img src={p.thumb} alt={p.name} loading="lazy" />
-                          )
-                        ) : (
-                          <div
-                            style={{
-                              height: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: 64,
-                              background: "var(--cream2)",
-                            }}
-                          >
-                            {p.emoji}
-                          </div>
-                        )}
-                        {disc > 0 && (
-                          <div className="product-badge">{disc}% OFF</div>
-                        )}
+                      <div className="carousel-card-img" style={{ height: 160 }}>
+                        {rawImg ? (
+                          <img
+                            src={rawImg.includes("cloudinary") ? cloudinaryResize(rawImg, 360) : rawImg}
+                            alt={p.name}
+                            loading="lazy"
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                            onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                          />
+                        ) : null}
+                        <div style={{
+                          display: rawImg ? "none" : "flex",
+                          height: "100%", width: "100%",
+                          alignItems: "center", justifyContent: "center",
+                          fontSize: 52, background: "var(--cream2)",
+                        }}>
+                          {p.emoji}
+                        </div>
+                        {disc > 0 && <div className="product-badge">{disc}% OFF</div>}
                       </div>
-                      <div className="carousel-card-body">
-                        <div
-                          style={{
-                            alignSelf: "center",
-                            fontFamily: "'Playfair Display',serif",
-                            fontSize: 13,
-                            color: "var(--maroon)",
-                            fontWeight: 700,
-                            lineHeight: 1.3,
-                            marginBottom: 0,
-                            height: 20,
-                            overflow: "hidden",
-                          }}
-                        >
+
+                      <div className="carousel-card-body" style={{ padding: "10px 12px" }}>
+                        <div style={{
+                          fontFamily: "'Playfair Display',serif",
+                          fontSize: 12, color: "var(--maroon)", fontWeight: 700,
+                          lineHeight: 1.3, marginBottom: 4,
+                          display: "-webkit-box", WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical", overflow: "hidden",
+                        }}>
                           {p.name}
                         </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "baseline",
-                            gap: 6,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: 16,
-                              fontWeight: 700,
-                              color: "var(--green)",
-                            }}
-                          >
-                            ₹{p.price.toLocaleString()}
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--green)" }}>
+                            ₹{p.price?.toLocaleString()}
                           </span>
                           {p.original > p.price && (
-                            <span
-                              style={{
-                                fontSize: 11,
-                                color: "var(--text-muted)",
-                                textDecoration: "line-through",
-                              }}
-                            >
-                              ₹{p.original.toLocaleString()}
+                            <span style={{ fontSize: 10, color: "var(--text-muted)", textDecoration: "line-through" }}>
+                              ₹{p.original?.toLocaleString()}
                             </span>
                           )}
                         </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "var(--gold)",
-                            marginTop: 3,
-                          }}
-                        >
-                          {"★".repeat(Math.floor(p.rating))}{" "}
-                          {p.rating > 0 && p.rating}
-                        </div>
+                        {p.rating > 0 && (
+                          <div style={{ fontSize: 10, color: "var(--gold)", marginTop: 2 }}>
+                            {"★".repeat(Math.min(5, Math.floor(p.rating)))} {p.rating}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
-                })}
+                })
+            }
           </div>
         </div>
-        <button className="carousel-nav next" onClick={() => move(1)}>
-          ›
-        </button>
+
+        <button className="carousel-nav next" onClick={() => move(1)} aria-label="Next">›</button>
       </div>
+
+      {/* Dots */}
+      {totalPages > 1 && !loading && (
+        <div className="carousel-dots" style={{ marginTop: 14 }}>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Page ${i + 1}`}
+              style={{
+                height: 7,
+                width: i === page ? 22 : 7,
+                borderRadius: 4,
+                background: i === page ? "var(--gold)" : "var(--border)",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                transition: "all 0.3s",
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

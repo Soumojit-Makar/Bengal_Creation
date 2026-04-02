@@ -5,6 +5,9 @@ import {
   fetchVendorOrders,
   fetchAllCategories,
   createProduct,
+  fetchRefundRequests,
+  processRefund,
+  fetchOrderReport,
 } from "../api/api";
 
 function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
@@ -18,6 +21,10 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   const [catOptions, setCatOptions] = useState([]);
   const [orders, setOrders] = useState([]);
   const [editIdx, setEditIdx] = useState(null);
+  const [refunds, setRefunds] = useState([]);
+  const [reportData, setReportData] = useState(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportRange, setReportRange] = useState({ startDate: "", endDate: "" });
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -57,7 +64,41 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
         );
       })
       .catch(console.error);
+
+    fetchRefundRequests(currentUser._id)
+      .then((data) => setRefunds(data.refunds || []))
+      .catch(console.error);
   }, [currentUser]);
+
+  const loadReport = useCallback(async () => {
+    if (!currentUser?._id) return;
+    setReportLoading(true);
+    try {
+      const data = await fetchOrderReport({
+        vendorId: currentUser._id,
+        startDate: reportRange.startDate,
+        endDate: reportRange.endDate,
+      });
+      setReportData(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setReportLoading(false);
+    }
+  }, [currentUser, reportRange]);
+
+  const handleRefundAction = async (orderId, action) => {
+    try {
+      await processRefund({ orderId, action });
+      setRefunds((prev) =>
+        prev.map((r) =>
+          r._id === orderId ? { ...r, refundStatus: action === "approve" ? "Processed" : "Rejected" } : r
+        )
+      );
+    } catch (err) {
+      alert("Failed to process refund: " + err.message);
+    }
+  };
 
   const resetForm = useCallback(() => {
     setForm({ name: "", price: "", originPrice: "", stock: "", district: "", desc: "" });
@@ -161,6 +202,8 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
             ["myproducts", "📦 My Products"],
             ["addproduct", "➕ Add Product"],
             ["orders", "📋 Orders"],
+            ["reports", "📊 Reports"],
+            ["refunds", "🔄 Refunds"],
           ].map(([tab, label]) => (
             <button
               key={tab}
@@ -654,6 +697,200 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
           </div>
         </div>
       )}
+      {/* ── Reports Tab ─────────────────────────────────────────────────────── */}
+      {activeTab === "reports" && (
+        <div style={{ padding: "24px 32px", maxWidth: 1000, margin: "0 auto" }}>
+          <h3 style={{ color: "var(--gold-light)", marginBottom: 20 }}>📊 Order Reports</h3>
+
+          {/* Filter */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24, alignItems: "flex-end" }}>
+            <div>
+              <label style={{ display: "block", fontSize: 12, color: "rgba(245,228,184,0.7)", marginBottom: 4 }}>From</label>
+              <input
+                type="date"
+                value={reportRange.startDate}
+                onChange={(e) => setReportRange((r) => ({ ...r, startDate: e.target.value }))}
+                style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 14 }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 12, color: "rgba(245,228,184,0.7)", marginBottom: 4 }}>To</label>
+              <input
+                type="date"
+                value={reportRange.endDate}
+                onChange={(e) => setReportRange((r) => ({ ...r, endDate: e.target.value }))}
+                style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: 14 }}
+              />
+            </div>
+            <button
+              onClick={loadReport}
+              disabled={reportLoading}
+              style={{ padding: "10px 20px", background: "var(--gold)", color: "var(--maroon)", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}
+            >
+              {reportLoading ? "Loading…" : "Generate Report"}
+            </button>
+          </div>
+
+          {reportData && (
+            <>
+              {/* Summary Cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 16, marginBottom: 28 }}>
+                {[
+                  { label: "Total Orders", value: reportData.totalOrders, icon: "📋" },
+                  { label: "Total Revenue", value: `₹${reportData.totalRevenue?.toLocaleString()}`, icon: "💰" },
+                  { label: "Refunds Issued", value: `₹${reportData.refundTotal?.toLocaleString()}`, icon: "🔄" },
+                  { label: "Net Revenue", value: `₹${(reportData.totalRevenue - reportData.refundTotal)?.toLocaleString()}`, icon: "📈" },
+                ].map((s) => (
+                  <div key={s.label} style={{
+                    background: "rgba(255,255,255,0.07)", borderRadius: 12,
+                    padding: "16px 20px", textAlign: "center", border: "1px solid rgba(200,146,42,0.2)",
+                  }}>
+                    <div style={{ fontSize: 28, marginBottom: 6 }}>{s.icon}</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: "var(--gold-light)" }}>{s.value}</div>
+                    <div style={{ fontSize: 12, color: "rgba(245,228,184,0.6)", marginTop: 2 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Breakdown */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 28 }}>
+                <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 20, border: "1px solid rgba(200,146,42,0.2)" }}>
+                  <h4 style={{ color: "var(--gold)", marginBottom: 12 }}>Order Status</h4>
+                  {Object.entries(reportData.statusBreakdown || {}).map(([status, count]) => (
+                    <div key={status} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "rgba(245,228,184,0.8)", marginBottom: 6 }}>
+                      <span>{status}</span><span style={{ fontWeight: 700 }}>{count}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 20, border: "1px solid rgba(200,146,42,0.2)" }}>
+                  <h4 style={{ color: "var(--gold)", marginBottom: 12 }}>Payment Methods</h4>
+                  {Object.entries(reportData.paymentBreakdown || {}).map(([method, count]) => (
+                    <div key={method} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "rgba(245,228,184,0.8)", marginBottom: 6 }}>
+                      <span>{method}</span><span style={{ fontWeight: 700 }}>{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Orders Table */}
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: "rgba(200,146,42,0.15)" }}>
+                      {["Order ID","Customer","Amount","Method","Payment","Status","Date"].map((h) => (
+                        <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "var(--gold)", fontWeight: 700 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.orders?.map((o) => (
+                      <tr key={o._id} style={{ borderBottom: "1px solid rgba(200,146,42,0.1)" }}>
+                        <td style={{ padding: "10px 14px", color: "rgba(245,228,184,0.7)", fontSize: 11 }}>{o._id?.slice(-8)}</td>
+                        <td style={{ padding: "10px 14px", color: "rgba(245,228,184,0.9)" }}>{o.user?.name || "—"}</td>
+                        <td style={{ padding: "10px 14px", color: "var(--gold)", fontWeight: 700 }}>₹{o.totalAmount?.toLocaleString()}</td>
+                        <td style={{ padding: "10px 14px", color: "rgba(245,228,184,0.8)" }}>{o.paymentMethod}</td>
+                        <td style={{ padding: "10px 14px" }}>
+                          <span style={{ padding: "3px 8px", borderRadius: 10, fontSize: 11, fontWeight: 700,
+                            background: o.paymentStatus === "Paid" ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+                            color: o.paymentStatus === "Paid" ? "#22c55e" : "#ef4444",
+                          }}>{o.paymentStatus}</span>
+                        </td>
+                        <td style={{ padding: "10px 14px" }}>
+                          <span style={{ padding: "3px 8px", borderRadius: 10, fontSize: 11, fontWeight: 700,
+                            background: "rgba(200,146,42,0.15)", color: "var(--gold)",
+                          }}>{o.status}</span>
+                        </td>
+                        <td style={{ padding: "10px 14px", color: "rgba(245,228,184,0.6)", fontSize: 11 }}>
+                          {new Date(o.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {!reportData && !reportLoading && (
+            <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(245,228,184,0.5)" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>📊</div>
+              <p>Select a date range and click Generate Report</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Refunds Tab ──────────────────────────────────────────────────────── */}
+      {activeTab === "refunds" && (
+        <div style={{ padding: "24px 32px", maxWidth: 900, margin: "0 auto" }}>
+          <h3 style={{ color: "var(--gold-light)", marginBottom: 20 }}>🔄 Refund Requests</h3>
+
+          {refunds.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(245,228,184,0.5)" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+              <p>No pending refund requests</p>
+            </div>
+          ) : (
+            refunds.map((r) => (
+              <div key={r._id} style={{
+                background: "rgba(255,255,255,0.06)", borderRadius: 12,
+                padding: "20px 24px", marginBottom: 16, border: "1px solid rgba(200,146,42,0.2)",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 12, color: "rgba(245,228,184,0.5)" }}>Order ID</div>
+                    <div style={{ fontWeight: 700, color: "var(--gold-light)", fontSize: 14 }}>{r._id?.slice(-12)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, color: "rgba(245,228,184,0.5)" }}>Customer</div>
+                    <div style={{ color: "rgba(245,228,184,0.9)" }}>{r.user?.name || "—"}</div>
+                    <div style={{ fontSize: 11, color: "rgba(245,228,184,0.5)" }}>{r.user?.email}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, color: "rgba(245,228,184,0.5)" }}>Refund Amount</div>
+                    <div style={{ fontWeight: 700, color: "var(--gold)", fontSize: 18 }}>₹{r.refundAmount?.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, color: "rgba(245,228,184,0.5)" }}>Status</div>
+                    <span style={{
+                      padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                      background: r.refundStatus === "Requested" ? "rgba(255,193,7,0.2)" : r.refundStatus === "Processed" ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
+                      color: r.refundStatus === "Requested" ? "#ffc107" : r.refundStatus === "Processed" ? "#22c55e" : "#ef4444",
+                    }}>{r.refundStatus}</span>
+                  </div>
+                </div>
+
+                {r.refundReason && (
+                  <div style={{ marginTop: 12, fontSize: 13, color: "rgba(245,228,184,0.7)", background: "rgba(0,0,0,0.2)", padding: "8px 12px", borderRadius: 6 }}>
+                    <b>Reason:</b> {r.refundReason}
+                  </div>
+                )}
+
+                {r.refundStatus === "Requested" && (
+                  <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                    <button
+                      onClick={() => handleRefundAction(r._id, "approve")}
+                      style={{ padding: "9px 18px", background: "#22c55e", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      ✅ Approve Refund
+                    </button>
+                    <button
+                      onClick={() => handleRefundAction(r._id, "reject")}
+                      style={{ padding: "9px 18px", background: "#ef4444", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      ❌ Reject
+                    </button>
+                    <span style={{ fontSize: 11, color: "rgba(245,228,184,0.4)", alignSelf: "center" }}>
+                      Transfer ₹{r.refundAmount?.toLocaleString()} to customer's UPI manually after approval
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

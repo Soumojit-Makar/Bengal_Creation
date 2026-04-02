@@ -38,11 +38,23 @@ export const transformVendor = (v) => ({
 });
 
 // ─── Products ─────────────────────────────────────────────────────────────────
-export const fetchAllProducts = async () => {
-  const res = await fetch(`${API}/products`);
+// Paginated fetch — returns { products, pagination }
+export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = {}) => {
+  const params = new URLSearchParams({ page, limit });
+  if (search) params.set("search", search);
+  const res = await fetch(`${API}/products?${params}`);
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
-  return data.map(transformProduct);
+  return {
+    products:   data.products.map(transformProduct),
+    pagination: data.pagination,
+  };
+};
+
+// Backwards compat — used by HomePage carousel initial load (first page only)
+export const fetchAllProducts = async () => {
+  const { products } = await fetchProductsPage({ page: 1, limit: 10 });
+  return products;
 };
 
 export const fetchVendorProducts = async (vendorId) => {
@@ -194,32 +206,7 @@ export const createAddress = async (addressData) => {
   return data;
 };
 
-// ─── Payment ──────────────────────────────────────────────────────────────────
-export const createPaymentOrder = async (orderId) => {
-  const res = await fetch(`${API}/payment/create/${orderId}`, {
-    method: "POST",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error("Failed to create payment");
-  return data;
-};
-
-export const verifyPayment = async (paymentData) => {
-  const res = await fetch(`${API}/payment/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(paymentData),
-  });
-  return res.json();
-};
-
-export const failPayment = async (orderId) => {
-  await fetch(`${API}/payment/failed`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ orderId }),
-  });
-};
+// ─── Payment (see UPI section below) ───────────────────────────────────────
 export const addContactMessage = async (messageData) => {
   const res = await fetch(`${API}/contact`, {
     method: "POST",
@@ -302,4 +289,88 @@ export const sendChatMessage = async (question, history = []) => {
   const data = await res.json();
   if (!res.ok) throw new Error(data.msg || "Chatbot error");
   return data;
+};
+// ─── Google Auth ──────────────────────────────────────────────────────────────
+export const googleLoginCustomer = async (credential) => {
+  const res = await fetch(`${API}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Google login failed");
+  return data;
+};
+
+export const googleLoginVendor = async (credential) => {
+  const res = await fetch(`${API}/vendors/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Google login failed");
+  return data;
+};
+
+// ─── UPI Payment ──────────────────────────────────────────────────────────────
+export const getUpiDetails = async (orderId) => {
+  const res = await fetch(`${API}/payment/upi/${orderId}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to get UPI details");
+  return data;
+};
+
+export const confirmUpiPayment = async ({ orderId, upiTransactionId }) => {
+  const res = await fetch(`${API}/payment/upi/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, upiTransactionId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to confirm payment");
+  return data;
+};
+
+// ─── Refunds ──────────────────────────────────────────────────────────────────
+export const requestRefund = async ({ orderId, reason }) => {
+  const res = await fetch(`${API}/payment/refund/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, reason }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Refund request failed");
+  return data;
+};
+
+export const processRefund = async ({ orderId, action, refundAmount }) => {
+  const res = await fetch(`${API}/payment/refund/process`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, action, refundAmount }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Refund processing failed");
+  return data;
+};
+
+export const fetchRefundRequests = async (vendorId) => {
+  const url = vendorId
+    ? `${API}/payment/refunds?vendorId=${vendorId}`
+    : `${API}/payment/refunds`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch refund requests");
+  return res.json();
+};
+
+// ─── Order Report ─────────────────────────────────────────────────────────────
+export const fetchOrderReport = async ({ vendorId, startDate, endDate } = {}) => {
+  const params = new URLSearchParams();
+  if (vendorId) params.set("vendorId", vendorId);
+  if (startDate) params.set("startDate", startDate);
+  if (endDate) params.set("endDate", endDate);
+  const res = await fetch(`${API}/payment/report?${params}`);
+  if (!res.ok) throw new Error("Failed to fetch order report");
+  return res.json();
 };

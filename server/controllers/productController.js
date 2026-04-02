@@ -35,10 +35,46 @@ const createProduct = async (req, res) => {
 };
 
 const getAllProducts = async (req, res) => {
-  const products = await Product.find()
-    .populate("vendor", "shopName")
-    .populate("category", "name");
-  res.json(products);
+  try {
+    const page     = parseInt(req.query.page)  || 1;
+    const limit    = parseInt(req.query.limit) || 10;
+    const category = req.query.category || "";
+    const search   = req.query.search   || "";
+
+    const filter = {};
+    if (category) filter["$or"] = []; // handled below
+
+    let query = {};
+    if (search) {
+      query["$or"] = [
+        { name:     { $regex: search, $options: "i" } },
+        { district: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip  = (page - 1) * limit;
+    const total = await Product.countDocuments(query);
+
+    const products = await Product.find(query)
+      .populate("vendor",   "shopName")
+      .populate("category", "name")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasMore:    page * limit < total,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 const getProductById = async (req, res) => {

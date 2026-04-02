@@ -4,37 +4,77 @@ import {
   createOrder,
   fetchAddresses,
   createAddress,
+  getUpiDetails,
+  confirmUpiPayment,
+  failPayment,
 } from "../api/api";
 import { useAuth } from "../context/AuthContext";
-import UPI_QR_URL from "../assets/upi_qr.png";
-// ── Bank & UPI details — edit these ─────────────────────────────────────────
-const BANK_DETAILS = {
-  accountName: "Bengal Creations",
-  accountNumber: "XXXX XXXX XXXX",
-  ifsc: "XXXX0000000",
-  bank: "State Bank of India",
-};
-const UPI_ID = "bengalcreations@upi";
+
 const PAYMENT_METHODS = [
-  { id: "COD",  icon: "💵", label: "Cash on Delivery", sub: "Pay when your order arrives" },
-  { id: "BANK_TRANSFER", icon: "🏦", label: "Bank Transfer",    sub: "NEFT / IMPS to our account" },
-  { id: "UPI",  icon: "📲", label: "UPI",              sub: "Scan QR or pay via UPI ID"  },
+  { id: "COD",           icon: "💵", label: "Cash on Delivery", sub: "Pay when your order arrives"   },
+  { id: "BANK_TRANSFER", icon: "🏦", label: "Bank Transfer",    sub: "NEFT / IMPS to our account"    },
+  { id: "UPI",           icon: "📲", label: "UPI / QR Code",    sub: "Scan & pay via any UPI app"     },
 ];
 
+const BANK_DETAILS = {
+  accountName:   "Bengal Creations",
+  accountNumber: "XXXX XXXX XXXX",
+  ifsc:          "XXXX0000000",
+  bank:          "State Bank of India",
+};
+
+// ── Dynamic UPI QR using Google Chart API (no library needed) ─────────────────
+function UpiQrCode({ upiId, amount, merchantName, orderId }) {
+  if (!upiId) return null;
+  // UPI deep-link: upi://pay?pa=ID&pn=NAME&am=AMOUNT&tn=NOTE&cu=INR
+  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName || "Bengal Creations")}&am=${amount}&tn=${encodeURIComponent("Order " + orderId)}&cu=INR`;
+  const qrUrl   = `https://chart.googleapis.com/chart?chs=220x220&cht=qr&chl=${encodeURIComponent(upiLink)}&choe=UTF-8`;
+
+  const handleOpenUpi = () => {
+    // On mobile this opens the UPI app directly
+    window.location.href = upiLink;
+  };
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <img src={qrUrl} alt="UPI QR Code" style={{ width: 200, height: 200, borderRadius: 8, marginBottom: 10 }} />
+      <div style={{ fontFamily: "monospace", fontSize: 14, color: "#333", background: "#f5f5f5", padding: "6px 14px", borderRadius: 6, display: "inline-block", marginBottom: 10 }}>
+        {upiId}
+      </div>
+      <br />
+      <button
+        onClick={handleOpenUpi}
+        style={{ marginTop: 6, padding: "10px 20px", background: "#22c55e", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: 14 }}
+      >
+        📱 Open UPI App
+      </button>
+      <p style={{ fontSize: 12, color: "#888", marginTop: 8 }}>
+        Scan with GPay, PhonePe, Paytm or any UPI app
+      </p>
+    </div>
+  );
+}
+
 function CheckoutPage({ cart, onPlaceOrder }) {
-  const navigate = useNavigate();
+  const navigate        = useNavigate();
   const { currentUser } = useAuth();
 
   const [form, setForm] = useState({
     name: "", phone: "", address: "", city: "",
     pin: "", state: "", houseNo: "", landmark: "",
   });
-  const [payment, setPayment]   = useState("cod");
-  const [ordered, setOrdered]   = useState(false);
-  const [orderId, setOrderId]   = useState("");
-  const [addressId, setAddressId] = useState(null);
-  const [addresses, setAddresses] = useState([]);
-  const [loading, setLoading]   = useState(false);
+  const [payment,    setPayment]    = useState("COD");
+  const [ordered,    setOrdered]    = useState(false);
+  const [orderId,    setOrderId]    = useState("");
+  const [addressId,  setAddressId]  = useState(null);
+  const [addresses,  setAddresses]  = useState([]);
+  const [loading,    setLoading]    = useState(false);
+
+  // UPI state
+  const [upiDetails,   setUpiDetails]   = useState(null);   // { upiId, amount, merchantName }
+  const [upiTxnId,     setUpiTxnId]     = useState("");
+  const [upiConfirmed, setUpiConfirmed] = useState(false);
+  const [upiLoading,   setUpiLoading]   = useState(false);
 
   const subtotal = cart.reduce((s, p) => s + p.product.price * (p.quantity || 1), 0);
   const tax      = Math.round(subtotal * 0.05);
@@ -49,22 +89,16 @@ function CheckoutPage({ cart, onPlaceOrder }) {
     try {
       if (!currentUser?._id) return;
       const saved = await createAddress({
-        customer:  currentUser._id,
-        fullName:  form.name,
-        phone:     form.phone,
-        pincode:   form.pin,
-        city:      form.city,
-        area:      form.address,
-        state:     form.state,
-        houseNo:   form.houseNo,
-        landmark:  form.landmark,
+        customer: currentUser._id,
+        fullName: form.name, phone: form.phone,
+        pincode:  form.pin,  city:  form.city,
+        area:     form.address, state: form.state,
+        houseNo:  form.houseNo, landmark: form.landmark,
       });
       setAddresses((prev) => [...prev, saved]);
       setAddressId(saved._id);
       alert("Address saved!");
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handlePlace = async () => {
@@ -77,11 +111,19 @@ function CheckoutPage({ cart, onPlaceOrder }) {
         addressId,
         user_id:       currentUser._id,
         items:         cart,
-        PaymentMethod: payment.toUpperCase(), // "COD" | "BANK_TRANSFER" | "UPI"
+        PaymentMethod: payment,
       });
-      setOrderId(orderData._id);
-      setOrdered(true);
-      if (onPlaceOrder) onPlaceOrder();
+      const newOrderId = orderData._id;
+      setOrderId(newOrderId);
+
+      if (payment === "UPI") {
+        // Fetch UPI details from server (gets UPI ID from env)
+        const upi = await getUpiDetails(newOrderId);
+        setUpiDetails(upi);
+      } else {
+        setOrdered(true);
+        if (onPlaceOrder) onPlaceOrder();
+      }
     } catch (err) {
       console.error(err);
       alert("Could not place order. Please try again.");
@@ -90,50 +132,113 @@ function CheckoutPage({ cart, onPlaceOrder }) {
     }
   };
 
+  const handleUpiConfirm = async () => {
+    setUpiLoading(true);
+    try {
+      await confirmUpiPayment({ orderId, upiTransactionId: upiTxnId || "UPI_PENDING" });
+      setUpiConfirmed(true);
+      setOrdered(true);
+      if (onPlaceOrder) onPlaceOrder();
+    } catch (err) {
+      alert("Could not confirm payment. Please try again.");
+    } finally {
+      setUpiLoading(false);
+    }
+  };
+
+  const handleUpiFail = async () => {
+    await failPayment(orderId);
+    alert("Payment cancelled.");
+    navigate("/");
+  };
+
+  // ── UPI Payment Screen ────────────────────────────────────────────────────
+  if (upiDetails && !upiConfirmed) {
+    return (
+      <div style={{ maxWidth: 480, margin: "60px auto", padding: "0 16px" }}>
+        <div style={card}>
+          <h2 style={{ color: "var(--maroon)", marginBottom: 4 }}>📲 Pay via UPI</h2>
+          <p style={{ color: "#888", fontSize: 14, marginBottom: 24 }}>
+            Scan the QR or open your UPI app to pay
+          </p>
+
+          <div style={{ background: "#f0fff4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "14px 18px", marginBottom: 20, textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#16a34a" }}>
+              ₹{upiDetails.amount?.toLocaleString()}
+            </div>
+            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>Order ID: {orderId}</div>
+          </div>
+
+          <UpiQrCode
+            upiId={upiDetails.upiId}
+            amount={upiDetails.amount}
+            merchantName={upiDetails.merchantName}
+            orderId={orderId}
+          />
+
+          <div style={{ marginTop: 24 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+              After paying, enter your UPI transaction ID (optional):
+            </p>
+            <input
+              className="form-control"
+              placeholder="e.g. 412345678901 (optional)"
+              value={upiTxnId}
+              onChange={(e) => setUpiTxnId(e.target.value)}
+              style={{ marginBottom: 12 }}
+            />
+            <button
+              className="btn-gold"
+              style={{ width: "100%", padding: "14px 0", fontSize: 16, fontWeight: 700 }}
+              onClick={handleUpiConfirm}
+              disabled={upiLoading}
+            >
+              {upiLoading ? "Confirming…" : "✅ I've Paid — Confirm Order"}
+            </button>
+            <button
+              onClick={handleUpiFail}
+              style={{ width: "100%", marginTop: 10, padding: "10px 0", background: "none", border: "1px solid #ddd", borderRadius: 8, cursor: "pointer", color: "#888", fontSize: 14 }}
+            >
+              Cancel Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── Order Confirmation ───────────────────────────────────────────────────────
   if (ordered) {
     return (
       <div style={{ textAlign: "center", padding: "80px 20px" }}>
         <div style={{ fontSize: 80, marginBottom: 16 }}>🎉</div>
-        <h2 style={{ color: "var(--maroon)", fontSize: 32, marginBottom: 12 }}>
-          Order Placed!
-        </h2>
+        <h2 style={{ color: "var(--maroon)", fontSize: 32, marginBottom: 12 }}>Order Placed!</h2>
         <p style={{ color: "var(--text-muted)", fontSize: 16, marginBottom: 8 }}>
-          Order ID: {orderId} · Payment: {payment.toUpperCase()}
+          Order ID: {orderId} · Payment: {payment}
         </p>
 
-        {/* Post-order payment instructions */}
-        {payment === "bank" && (
-          <div style={instructionBox}>
+        {payment === "BANK_TRANSFER" && (
+          <div style={{ ...instructionBox, maxWidth: 400, margin: "20px auto" }}>
             <p style={{ fontWeight: 600, marginBottom: 8 }}>Bank Transfer Details</p>
             <p>Account Name: <b>{BANK_DETAILS.accountName}</b></p>
             <p>Account No: <b>{BANK_DETAILS.accountNumber}</b></p>
             <p>IFSC: <b>{BANK_DETAILS.ifsc}</b></p>
             <p>Bank: <b>{BANK_DETAILS.bank}</b></p>
             <p style={{ marginTop: 8, fontSize: 13, color: "var(--text-muted)" }}>
-              Please use your Order ID <b>{orderId}</b> as the transfer reference.
+              Use Order ID <b>{orderId}</b> as the reference.
             </p>
           </div>
         )}
-        {payment === "upi" && (
-          <div style={instructionBox}>
-            <p style={{ fontWeight: 600, marginBottom: 8 }}>Pay via UPI</p>
-            {UPI_QR_URL && (
-              <img src={UPI_QR_URL} alt="UPI QR" style={{ width: 160, marginBottom: 12 }} />
-            )}
-            <p>UPI ID: <b>{UPI_ID}</b></p>
-            <p style={{ marginTop: 8, fontSize: 13, color: "var(--text-muted)" }}>
-              Send ₹{total.toLocaleString()} and mention Order ID <b>{orderId}</b> in remarks.
-            </p>
-          </div>
+        {payment === "UPI" && (
+          <p style={{ color: "#16a34a", fontWeight: 600 }}>✅ UPI Payment recorded</p>
         )}
-        {payment === "cod" && (
+        {payment === "COD" && (
           <p style={{ color: "var(--text-muted)", marginBottom: 32 }}>
             Pay ₹{total.toLocaleString()} in cash when your order arrives. 🛵
           </p>
         )}
 
-        <button className="btn-gold" onClick={() => navigate("/orders")}>
+        <button className="btn-gold" onClick={() => navigate("/orders")} style={{ marginTop: 20 }}>
           📦 Track My Order
         </button>
       </div>
@@ -187,17 +292,17 @@ function CheckoutPage({ cart, onPlaceOrder }) {
 
             <div className="form-grid">
               {[
-                ["name",     "Full Name",                   "text"],
-                ["phone",    "Phone",                       "tel"],
-                ["houseNo",  "House / Flat / Office No.",   "text"],
-                ["address",  "Street Address / Colony",     "text"],
-                ["landmark", "Landmark (Optional)",         "text"],
-                ["city",     "City",                        "text"],
-                ["state",    "State",                       "text"],
-                ["pin",      "PIN Code",                    "text"],
+                ["name",     "Full Name",                  "text"],
+                ["phone",    "Phone",                      "tel"],
+                ["houseNo",  "House / Flat / Office No.",  "text"],
+                ["address",  "Street Address / Colony",    "text"],
+                ["landmark", "Landmark (Optional)",        "text"],
+                ["city",     "City",                       "text"],
+                ["state",    "State",                      "text"],
+                ["pin",      "PIN Code",                   "text"],
               ].map(([key, label, type]) => (
                 <div key={key} className={`form-group${key === "address" ? " full" : ""}`}>
-                  {key === "landmark" ? <label>{label} </label>: <label>{label} <span className="req">*</span></label>}
+                  {key === "landmark" ? <label>{label}</label> : <label>{label} <span className="req">*</span></label>}
                   <input
                     className="form-control"
                     type={type}
@@ -221,8 +326,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
                 style={{
                   display: "flex", alignItems: "center", gap: 14,
                   padding: "14px 16px", marginBottom: 10,
-                  borderRadius: 12, cursor: "pointer",
-                  transition: "0.15s all ease",
+                  borderRadius: 12, cursor: "pointer", transition: "0.15s all ease",
                   border:     payment === m.id ? "2px solid #800000" : "1px solid #ddd",
                   background: payment === m.id ? "#fff5e6" : "white",
                 }}
@@ -240,7 +344,6 @@ function CheckoutPage({ cart, onPlaceOrder }) {
               </div>
             ))}
 
-            {/* Inline detail panels */}
             {payment === "BANK_TRANSFER" && (
               <div style={instructionBox}>
                 <p style={{ fontWeight: 600, marginBottom: 6 }}>Bank Transfer Details</p>
@@ -248,38 +351,16 @@ function CheckoutPage({ cart, onPlaceOrder }) {
                 <p>Account No: <b>{BANK_DETAILS.accountNumber}</b></p>
                 <p>IFSC: <b>{BANK_DETAILS.ifsc}</b></p>
                 <p>Bank: <b>{BANK_DETAILS.bank}</b></p>
-                <p style={{ marginTop: 6, fontSize: 12, color: "var(--text-muted)" }}>
-                  Transfer the exact amount and use your Order ID as the payment reference.
-                </p>
               </div>
             )}
 
             {payment === "UPI" && (
               <div style={{ ...instructionBox, textAlign: "center" }}>
-                {UPI_QR_URL
-                  ? <img src={UPI_QR_URL} alt="UPI QR Code" style={{ width: 160, marginBottom: 10 }} />
-                  : (
-                    <div style={{
-                      width: 140, height: 140, margin: "0 auto 12px",
-                      border: "2px dashed #aaa", borderRadius: 8,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 12, color: "var(--text-muted)",
-                    }}>
-                      QR Code Here
-                    </div>
-                  )
-                }
-                <p style={{ fontWeight: 600 }}>UPI ID</p>
-                <div style={{
-                  display: "inline-block", padding: "6px 16px",
-                  background: "#f5f5f5", borderRadius: 6,
-                  fontFamily: "monospace", fontSize: 14, letterSpacing: 0.5,
-                  color: "#333", marginTop: 4,
-                }}>
-                  {UPI_ID}
-                </div>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
-                  Send the exact amount and mention your Order ID in remarks.
+                <p style={{ fontSize: 13, color: "#555", marginBottom: 4 }}>
+                  A QR code will be generated for exact order amount after you click Place Order.
+                </p>
+                <p style={{ fontSize: 12, color: "#888" }}>
+                  Works with GPay, PhonePe, Paytm, BHIM & all UPI apps 📱
                 </p>
               </div>
             )}
@@ -329,7 +410,7 @@ function CheckoutPage({ cart, onPlaceOrder }) {
           </div>
 
           <button className="btn-gold" style={{ width: "100%", marginTop: 20 }} onClick={handlePlace} disabled={loading}>
-            {loading ? "Placing Order…" : "Place Order →"}
+            {loading ? "Placing Order…" : payment === "UPI" ? "Place Order & Pay via UPI →" : "Place Order →"}
           </button>
           <p style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", marginTop: 12 }}>
             🔒 Secure checkout
@@ -340,7 +421,6 @@ function CheckoutPage({ cart, onPlaceOrder }) {
   );
 }
 
-// ── Style constants ─────────────────────────────────────────────────────────
 const card = {
   background: "white", border: "1px solid var(--border)",
   borderRadius: 16, padding: 32, marginBottom: 24,

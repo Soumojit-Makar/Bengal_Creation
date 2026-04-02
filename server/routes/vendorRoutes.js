@@ -30,6 +30,8 @@ router.post("/register", registerVendor);
 */
 
 router.post("/login", loginVendor);
+
+router.post("/google", require("../controllers/Googleauthcontroller").vendorGoogleLogin);
 /*
   #swagger.tags = ['Vendors']
   #swagger.summary = 'Vendor login'

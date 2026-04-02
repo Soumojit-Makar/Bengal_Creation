@@ -78,6 +78,7 @@ function HomePage({
         products={allProducts}
         onShowProduct={(id) => navigate(`/product/${id}`)}
         loading={loading}
+        visibleCount={10}
       />
 
       {/* Best Sellers */}
@@ -86,6 +87,7 @@ function HomePage({
         products={[...allProducts].reverse()}
         onShowProduct={(id) => navigate(`/product/${id}`)}
         loading={loading}
+        visibleCount={10}
       />
 
       {/* Per-Category Carousels */}

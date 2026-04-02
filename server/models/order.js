@@ -55,7 +55,15 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ["NOT CALLED", "INITIATED", "CALLED","NOT INTERESTED","FOLLOW UP LATER"],
         default: "NOT CALLED"
-    }
+    },
+    refundStatus: {
+        type: String,
+        enum: ["None", "Requested", "Approved", "Rejected", "Processed"],
+        default: "None"
+    },
+    refundReason: { type: String, default: "" },
+    refundAmount: { type: Number, default: 0 },
+    refundRequestedAt: { type: Date }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Order", orderSchema);

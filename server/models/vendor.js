@@ -17,6 +17,8 @@ const vendorSchema = new mongoose.Schema({
     banner:String,
     address:{ type:String, required:true },
     isVerified:{ type:Boolean, default:false },
+    googleId: { type: String, default: null },
+    picture: { type: String, default: null },
 
     documents:{
         tradeLicense:{ type:String, required:true },

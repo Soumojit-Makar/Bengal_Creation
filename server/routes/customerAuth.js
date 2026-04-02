@@ -13,7 +13,7 @@ router.post("/login", loginCustomer);
   #swagger.tags = ['Auth']
   #swagger.summary = 'Customer login'
 */
-
+router.post("/google", require("../controllers/Googleauthcontroller").googleLogin);
 router.post("/forgot-password", forgotPassword);
 /*
   #swagger.tags = ['Auth']

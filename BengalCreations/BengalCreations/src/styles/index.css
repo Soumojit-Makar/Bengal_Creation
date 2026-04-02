@@ -375,7 +375,7 @@ h5 {
   right: 0;
 }
 .carousel-card {
-  flex: 0 0 220px;
+  flex: 0 0 180px;
   background: white;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -390,9 +390,10 @@ h5 {
   border-color: var(--gold);
 }
 .carousel-card-img {
-  height: 180px;
+  height: 160px;
   overflow: hidden;
   position: relative;
+  background: var(--cream2);
 }
 .carousel-card-img img {
   width: 100%;
@@ -2106,4 +2107,9 @@ footer {
   background-repeat: no-repeat;  /* prevent tiling */
   width: 100%;
   min-height: 100vh;             /* full screen height */
+}
+/* ── Loading bounce dots ────────────────────────────────────────────────── */
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-8px); }
 }

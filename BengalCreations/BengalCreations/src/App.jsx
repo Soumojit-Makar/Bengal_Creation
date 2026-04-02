@@ -51,6 +51,7 @@ export default function App() {
   const [wishlist, setWishlist] = useLocalStorage("sm_wishlist", []);
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [appReady, setAppReady] = useState(false);
   const [catOptions, setCatOptions] = useState([]);
   const [filterCategory, setFilterCategory] = useState("");
 
@@ -58,8 +59,16 @@ export default function App() {
   useEffect(() => {
     fetchAllCategories().then(setCatOptions).catch(console.error);
     fetchAllProducts()
-      .then((data) => { setAllProducts(data); setLoading(false); })
-      .catch(console.error);
+      .then((data) => {
+        setAllProducts(data);
+        setLoading(false);
+        // Small delay so splash animates out smoothly
+        setTimeout(() => setAppReady(true), 600);
+      })
+      .catch(() => {
+        setLoading(false);
+        setAppReady(true);
+      });
     if (currentUser?._id) loadCart(currentUser._id);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -151,7 +160,7 @@ export default function App() {
           <ShopPage
             cart={cart} wishlist={wishlist}
             onAddCart={addToCart} onToggleWish={toggleWishlist}
-            allProducts={allProducts} WB_DISTRICTS={WB_DISTRICTS}
+            WB_DISTRICTS={WB_DISTRICTS}
           />
         } />
         <Route path="/product/:id" element={

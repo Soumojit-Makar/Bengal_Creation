@@ -1,74 +1,159 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { fetchAllCategories } from "../api/api";
+import { fetchAllCategories, fetchProductsPage } from "../api/api";
 
-function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DISTRICTS }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+const PAGE_SIZE = 10;
+
+function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
+  const navigate     = useNavigate();
+  const location     = useLocation();
   const locationState = location.state || {};
 
-  const [catOptions, setCatOptions] = useState([
-    { name: "Handloom Sarees", emoji: "🥻" },
-    { name: "Terracotta Crafts", emoji: "🏺" },
-    { name: "Dokra Art", emoji: "🔔" },
-    { name: "Wooden Handicrafts", emoji: "🪵" },
-    { name: "Jute Products", emoji: "🧺" },
-    { name: "Bengal Sweets", emoji: "🍬" },
-  ]);
-
+  const [catOptions, setCatOptions] = useState([]);
   const [filters, setFilters] = useState({
-    category: "",
+    category: locationState.category || "",
     district: "",
     priceMin: "",
     priceMax: "",
-    search: locationState.searchQuery || "",
+    search:   locationState.searchQuery || "",
   });
   const [ratingFilter, setRatingFilter] = useState(0);
 
-  useEffect(() => {
-    fetchAllCategories()
-      .then(setCatOptions)
-      .catch(console.error);
+  // Pagination state
+  const [products,   setProducts]   = useState([]);
+  const [page,       setPage]       = useState(1);
+  const [hasMore,    setHasMore]    = useState(true);
+  const [loading,    setLoading]    = useState(false);
+  const [initLoaded, setInitLoaded] = useState(false);
+  const [total,      setTotal]      = useState(0);
 
-    if (location.state?.searchQuery !== undefined) {
-      setFilters((f) => ({
-        ...f,
-        search: location.state.searchQuery,
-        category: location.state.category || f.category,
-      }));
+  const loaderRef = useRef(null);
+
+  // Reset + reload when filters change
+  const resetAndLoad = useCallback(async (newFilters, rating) => {
+    setLoading(true);
+    setProducts([]);
+    setPage(1);
+    setHasMore(true);
+    setInitLoaded(false);
+    try {
+      const res = await fetchProductsPage({ page: 1, limit: PAGE_SIZE, search: newFilters.search });
+      // Client-side filter for category/district/price/rating since server only supports search
+      const filtered = clientFilter(res.products, newFilters, rating);
+      setProducts(filtered);
+      setTotal(res.pagination.total);
+      setHasMore(res.pagination.hasMore);
+      setPage(2);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setInitLoaded(true);
     }
-  }, [location.key]);
-
-  const filtered = useMemo(() => allProducts.filter((p) => {
-    if (filters.category && p.category !== filters.category) return false;
-    if (filters.district && p.district !== filters.district) return false;
-    if (filters.priceMin && p.price < parseInt(filters.priceMin)) return false;
-    if (filters.priceMax && p.price > parseInt(filters.priceMax)) return false;
-    if (ratingFilter > 0 && p.rating < ratingFilter) return false;
-
-    if (filters.search) {
-      const query = filters.search.toLowerCase().trim();
-      const inName = p.name?.toLowerCase().includes(query);
-      const inVendor = p.vendor?.toLowerCase().includes(query);
-      const inCategory = p.category?.toLowerCase().includes(query);
-      const inDistrict = p.district?.toLowerCase().includes(query);
-      if (!inName && !inVendor && !inCategory && !inDistrict) return false;
-    }
-
-    return true;
-  }), [allProducts, filters, ratingFilter]);
-
-  const clearFilters = useCallback(() => {
-    setFilters({ category: "", district: "", priceMin: "", priceMax: "", search: "" });
-    setRatingFilter(0);
   }, []);
 
+  // Load next page (append)
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    try {
+      const res = await fetchProductsPage({ page, limit: PAGE_SIZE, search: filters.search });
+      const filtered = clientFilter(res.products, filters, ratingFilter);
+      setProducts((prev) => {
+        const ids = new Set(prev.map((p) => p.id));
+        return [...prev, ...filtered.filter((p) => !ids.has(p.id))];
+      });
+      setHasMore(res.pagination.hasMore);
+      setPage((p) => p + 1);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, page, filters, ratingFilter]);
+
+  // Client-side filter (for category/district/price/rating applied on already-fetched data)
+  function clientFilter(prods, f, rating) {
+    return prods.filter((p) => {
+      if (f.category && p.category !== f.category) return false;
+      if (f.district && p.district !== f.district) return false;
+      if (f.priceMin && p.price < parseInt(f.priceMin)) return false;
+      if (f.priceMax && p.price > parseInt(f.priceMax)) return false;
+      if (rating > 0 && p.rating < rating) return false;
+      return true;
+    });
+  }
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!initLoaded) return;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting && hasMore && !loading) loadMore(); },
+      { threshold: 0.1 }
+    );
+    const el = loaderRef.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
+  }, [initLoaded, hasMore, loading, loadMore]);
+
+  // Initial load + reload on location change
+  useEffect(() => {
+    fetchAllCategories().then(setCatOptions).catch(console.error);
+    const newFilters = {
+      category: location.state?.category || "",
+      district: "",
+      priceMin: "",
+      priceMax: "",
+      search:   location.state?.searchQuery || "",
+    };
+    setFilters(newFilters);
+    resetAndLoad(newFilters, 0);
+    setRatingFilter(0);
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const applyFilters = () => resetAndLoad(filters, ratingFilter);
+
+  const clearFilters = useCallback(() => {
+    const f = { category: "", district: "", priceMin: "", priceMax: "", search: "" };
+    setFilters(f);
+    setRatingFilter(0);
+    resetAndLoad(f, 0);
+  }, [resetAndLoad]);
+
+  // Skeleton grid
+  const SkeletonGrid = () => (
+    <div className="products-grid">
+      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+        <div key={i} className="product-card skeleton-card" style={{ minHeight: 260 }}>
+          <div className="skeleton-img" style={{ height: 180 }} />
+          <div style={{ padding: 12 }}>
+            <div className="skeleton-line title" style={{ marginBottom: 8 }} />
+            <div className="skeleton-line price" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="">
+    <div>
       <div className="shop-layout">
+        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
         <aside className="sidebar">
           <h3>🔍 Filter Products</h3>
+
+          <div className="filter-section">
+            <label>Search</label>
+            <input
+              className="filter-input"
+              type="text"
+              placeholder="Name, category..."
+              value={filters.search}
+              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+              onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+            />
+          </div>
 
           <div className="filter-section">
             <label>Category</label>
@@ -79,9 +164,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DIS
             >
               <option value="">All Categories</option>
               {catOptions.map((c) => (
-                <option key={c._id ?? c.name} value={c.name}>
-                  {c.name}
-                </option>
+                <option key={c._id ?? c.name} value={c.name}>{c.name}</option>
               ))}
             </select>
           </div>
@@ -94,9 +177,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DIS
               onChange={(e) => setFilters((f) => ({ ...f, district: e.target.value }))}
             >
               <option value="">All Districts</option>
-              {WB_DISTRICTS.map((d) => (
-                <option key={d}>{d}</option>
-              ))}
+              {WB_DISTRICTS.map((d) => <option key={d}>{d}</option>)}
             </select>
           </div>
 
@@ -104,16 +185,12 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DIS
             <label>Price Range (₹)</label>
             <div className="price-range">
               <input
-                className="filter-input"
-                type="number"
-                placeholder="Min"
+                className="filter-input" type="number" placeholder="Min"
                 value={filters.priceMin}
                 onChange={(e) => setFilters((f) => ({ ...f, priceMin: e.target.value }))}
               />
               <input
-                className="filter-input"
-                type="number"
-                placeholder="Max"
+                className="filter-input" type="number" placeholder="Max"
                 value={filters.priceMax}
                 onChange={(e) => setFilters((f) => ({ ...f, priceMax: e.target.value }))}
               />
@@ -135,43 +212,72 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, allProducts, WB_DIS
             </div>
           </div>
 
-          <button className="clear-filters-btn" onClick={clearFilters}>
-            ✕ Clear Filters
+          <button className="btn-gold" style={{ width: "100%", marginBottom: 8 }} onClick={applyFilters}>
+            Apply Filters
           </button>
+          <button className="clear-filters-btn" onClick={clearFilters}>✕ Clear Filters</button>
         </aside>
 
+        {/* ── Product Grid ─────────────────────────────────────────────────── */}
         <div className="shop-main">
           <h2>{filters.category || "All Products"}</h2>
           <div className="shop-count">
-            {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
+            {loading && products.length === 0 ? "Loading…" : `${total} product${total !== 1 ? "s" : ""} found`}
           </div>
-          <div className="products-grid">
-            {filtered.length ? (
-              filtered.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  p={p}
-                  inCart={!!cart.find((c) => c.id === p.id)}
-                  inWish={wishlist.includes(p.id)}
-                  onAddCart={onAddCart}
-                  onToggleWish={onToggleWish}
-                  onShowProduct={(id) => navigate(`/product/${id}`)}
-                />
-              ))
-            ) : (
-              <div
-                style={{
-                  gridColumn: "1/-1",
-                  textAlign: "center",
-                  padding: "60px",
-                  color: "var(--text-muted)",
-                }}
-              >
-                <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
-                <p>No products found matching your filters.</p>
-              </div>
-            )}
-          </div>
+
+          {/* Initial skeleton */}
+          {!initLoaded && <SkeletonGrid />}
+
+          {/* Products */}
+          {initLoaded && (
+            <>
+              {products.length > 0 ? (
+                <div className="products-grid">
+                  {products.map((p) => (
+                    <ProductCard
+                      key={p.id}
+                      p={p}
+                      inCart={!!cart.find((c) => c.id === p.id)}
+                      inWish={wishlist.includes(p.id)}
+                      onAddCart={onAddCart}
+                      onToggleWish={onToggleWish}
+                      onShowProduct={(id) => navigate(`/product/${id}`)}
+                    />
+                  ))}
+                </div>
+              ) : !loading ? (
+                <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
+                  <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+                  <p>No products found matching your filters.</p>
+                </div>
+              ) : null}
+
+              {/* Scroll loader — invisible sentinel */}
+              <div ref={loaderRef} style={{ height: 1 }} />
+
+              {/* Loading more indicator */}
+              {loading && products.length > 0 && (
+                <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)" }}>
+                  <div style={{ display: "inline-flex", gap: 6 }}>
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} style={{
+                        width: 8, height: 8, borderRadius: "50%",
+                        background: "var(--gold)",
+                        animation: `bounce 1s ${i * 0.2}s infinite`,
+                      }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* End message */}
+              {!hasMore && products.length > 0 && (
+                <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                  ✅ All {products.length} products loaded
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

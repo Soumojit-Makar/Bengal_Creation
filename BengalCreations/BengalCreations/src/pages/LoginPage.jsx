@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { uploadImage } from "../utils/cloudinary";
 import {
   loginCustomer as apiLoginCustomer,
@@ -8,6 +9,8 @@ import {
   registerVendor as apiRegisterVendor,
   createAddress,
   forgotPassword as apiForgotPassword,
+  googleLoginCustomer,
+  googleLoginVendor,
 } from "../api/api";
 
 function LoginPage({ onLogin, showToast }) {
@@ -80,7 +83,41 @@ function LoginPage({ onLogin, showToast }) {
       setLoading(false);
     }
   };
+    // ── Google Login ─────────────────────────────────────────────────────────────
+  const doGoogleLogin = useCallback(async (credentialResponse) => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await googleLoginCustomer(credentialResponse.credential);
+      data.user.role = "customer";
+      showToast(`Welcome, ${data.user.name}!`);
+      onLogin(data.user);
+      navigate("/");
+    } catch (err) {
+      setError(err.message);
+      showToast(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate, onLogin, showToast]);
 
+  const doVendorGoogleLogin = useCallback(async (credentialResponse) => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await googleLoginVendor(credentialResponse.credential);
+      data.vendor.role = "vendor";
+      showToast(`Welcome back, ${data.vendor.name}!`);
+      onLogin(data.vendor);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+      showToast(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate, onLogin, showToast]);
+ 
   // ── Forgot Password ───────────────────────────────────────────────────────────
   const doForgotPassword = async () => {
     if (!forgotEmail) { showToast("⚠️ Please enter your email"); return; }
@@ -263,6 +300,41 @@ function LoginPage({ onLogin, showToast }) {
                 <button className="login-submit-btn" onClick={doSignIn} disabled={loading}>
                   {loading ? "Signing in…" : "Sign In →"}
                 </button>
+                <div style={{ marginTop: 18, textAlign: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ flex: 1, height: 1, background: "rgba(107,87,68,0.25)" }} />
+                    <span style={{ fontSize: 12, color: "#6b5744", fontWeight: 600 }}>OR</span>
+                    <div style={{ flex: 1, height: 1, background: "rgba(107,87,68,0.25)" }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    {role === "customer" ? (
+                      <GoogleLogin
+                        onSuccess={doGoogleLogin}
+                        onError={() => showToast("❌ Google sign-in failed")}
+                        text="signin_with"
+                        shape="rectangular"
+                        theme="outline"
+                        size="large"
+                        logo_alignment="left"
+                      />
+                    ) : (
+                      <GoogleLogin
+                        onSuccess={doVendorGoogleLogin}
+                        onError={() => showToast("❌ Google sign-in failed")}
+                        text="signin_with"
+                        shape="rectangular"
+                        theme="outline"
+                        size="large"
+                        logo_alignment="left"
+                      />
+                    )}
+                  </div>
+                  {role === "vendor" && (
+                    <p style={{ fontSize: 11, color: "rgba(245,228,184,0.45)", marginTop: 8 }}>
+                      Google login links to your existing vendor account
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
