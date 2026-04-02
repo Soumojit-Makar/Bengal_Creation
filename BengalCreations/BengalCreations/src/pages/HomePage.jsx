@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState ,useEffect} from "react";
 import Carousel from "../components/Carousel";
 import FaceBook from "../assets/facebook.png";
 import InstaGram from "../assets/instagram.png";
