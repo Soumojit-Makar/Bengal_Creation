@@ -51,8 +51,7 @@ export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = 
   };
 };
 export const fetchProductsPageByCategory = async ({ page = 1, limit = 10,  category } = {}) => {
-  const params = new URLSearchParams({ page, limit });
-  if (category) params.set("category", category);
+  const params = new URLSearchParams({ page, limit,category });
   const res = await fetch(`${API}/products?${params}`);
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
