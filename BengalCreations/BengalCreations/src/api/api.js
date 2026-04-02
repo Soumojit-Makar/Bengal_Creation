@@ -374,3 +374,13 @@ export const fetchOrderReport = async ({ vendorId, startDate, endDate } = {}) =>
   if (!res.ok) throw new Error("Failed to fetch order report");
   return res.json();
 };
+export const failPayment = async (orderId) => {
+  const res = await fetch(`${API}/payment/failed`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to mark payment as failed");
+  return data;
+};
