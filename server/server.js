@@ -43,8 +43,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
 // Database connection
-connectDB().catch((err) => {
-  console.error("Initial DB connection failed:", err);
+app.use(async (req, res, next) => {
+  try {
+    await connectDB(); // ✅ ensures DB is connected per request
+    next();
+  } catch (err) {
+    console.error("DB connection error:", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
 });
 
 // API Routes
@@ -89,8 +95,6 @@ app.get("/", (req, res) => {
 // Health check
 app.get("/health", async (req, res) => {
   try {
-    await seedVendorAndProducts();
-    await seedCategories();
     await connectDB();
     res.status(200).json({
       success: true,
@@ -98,6 +102,7 @@ app.get("/health", async (req, res) => {
       database: "Connected",
       timestamp: new Date().toISOString(),
     });
+    
   } catch (error) {
     res.status(500).json({
       success: false,
