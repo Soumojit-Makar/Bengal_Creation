@@ -50,7 +50,18 @@ export const fetchProductsPage = async ({ page = 1, limit = 10, search = "" } = 
     pagination: data.pagination,
   };
 };
-
+export const fetchProductsPageByCategory = async ({ page = 1, limit = 10, search = "", category } = {}) => {
+  const params = new URLSearchParams({ page, limit });
+  if (search) params.set("search", search);
+  if (category) params.set("category", category);
+  const res = await fetch(`${API}/products?${params}`);
+  if (!res.ok) throw new Error("Failed to fetch products");
+  const data = await res.json();
+  return {
+    products:   data.products.map(transformProduct),
+    pagination: data.pagination,
+  };
+};
 // Backwards compat — used by HomePage carousel initial load (first page only)
 export const fetchAllProducts = async () => {
   const { products } = await fetchProductsPage({ page: 1, limit: 10 });

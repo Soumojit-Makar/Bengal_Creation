@@ -14,6 +14,7 @@ import MasterCard from "../assets/payment-method/mastercard.png";
 import RuPay from "../assets/payment-method/rupay.png";
 import GPay from "../assets/payment-method/gpay.png";
 import Paytm from "../assets/payment-method/paytm.png";
+import { fetchProductsPageByCategory } from "../api/api";
 function HomePage({
   setFilterCategory,
   cart,
@@ -25,7 +26,12 @@ function HomePage({
   loading,
 }) {
   const navigate = useNavigate();
-
+  const [handloomSarees, setHandloomSarees] = useState([]);
+  const [dokraArt, setDokraArt] = useState([]);
+  const [juteProducts, setJuteProducts] = useState([]);
+  const [terracottaCrafts, setTerracottaCrafts] = useState([]);
+  const [woodenHandicrafts, setWoodenHandicrafts] = useState([]);
+  const [bengalSweets, setBengalSweets] = useState([]);
   const goToShop = useCallback(
     (category) => {
       setFilterCategory(category);
@@ -33,7 +39,37 @@ function HomePage({
     },
     [setFilterCategory, navigate],
   );
-
+  useEffect(() => {
+    const fetchCategoryProducts = async () => {
+      try {
+        const [
+          handloomData,
+          dokraData,
+          juteData,
+          terracottaData,
+          woodenData,
+          sweetsData,
+        ] = await Promise.all([
+          fetchProductsPageByCategory("Handloom Sarees"),
+          fetchProductsPageByCategory("Dokra Art"),
+          fetchProductsPageByCategory("Jute Products"),
+          fetchProductsPageByCategory("Terracotta Crafts"),
+          fetchProductsPageByCategory("Wooden Handicrafts"),
+          fetchProductsPageByCategory("Bengal Sweets"),
+        ]);
+        setHandloomSarees(handloomData.products);
+        setDokraArt(dokraData.products);
+        setJuteProducts(juteData.products);
+        setTerracottaCrafts(terracottaData.products);
+        setWoodenHandicrafts(woodenData.products);
+        setBengalSweets(sweetsData.products);
+      } catch (error) {
+        console.error("Error fetching category products:", error);
+      }
+    };
+    fetchCategoryProducts();
+   }, []     
+  );
   const CATEGORY_CAROUSELS = [
     "Handloom Sarees",
     "Dokra Art",
@@ -51,7 +87,7 @@ function HomePage({
     });
     return map;
   }, [allProducts]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  
   return (
     <div>
       {/* Gallery Tiles */}
@@ -95,7 +131,13 @@ function HomePage({
         <Carousel
           key={cat}
           title={cat}
-          products={productsByCategory[cat] || []}
+          products={cat==="Handloom Sarees" ? handloomSarees :
+                    cat==="Dokra Art" ? dokraArt :
+                    cat==="Jute Products" ? juteProducts :
+                    cat==="Terracotta Crafts" ? terracottaCrafts :
+                    cat==="Wooden Handicrafts" ? woodenHandicrafts :
+                    cat==="Bengal Sweets" ? bengalSweets : []
+                  }
           onShowProduct={(id) => navigate(`/product/${id}`)}
           loading={loading}
         />
