@@ -83,7 +83,12 @@ export const createProduct = async (formData) => {
   if (!res.ok) throw new Error(data.message || "Failed to create product");
   return data;
 };
-
+export const getProductById = async (id) => {
+  const res = await fetch(`${API}/products/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch product");
+  const data = await res.json();
+  return transformProduct(data);
+}
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const fetchAllCategories = async () => {
   const res = await fetch(`${API}/categories`);
