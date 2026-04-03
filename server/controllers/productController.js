@@ -51,7 +51,7 @@ const getAllProducts = async (req, res) => {
         { district: { $regex: search, $options: "i" } },
       ];
     }
-
+    console.log("Base query:", query);
     const skip  = (page - 1) * limit;
     const total = await Product.countDocuments(query);
 
@@ -61,7 +61,7 @@ const getAllProducts = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-
+    console.log("Retrieved products:", products);
     res.json({
       products,
       pagination: {
