@@ -52,6 +52,12 @@ const getAllProducts = async (req, res) => {
       ];
     }
     console.log("Base query:", query);
+    if (category) {
+      const categories = category.split(",").map((cat) => cat.trim());
+      query["$or"] = categories.map((cat) => ({ category: cat }));
+    }
+    console.log("Final query:", query);
+
     const skip  = (page - 1) * limit;
     const total = await Product.countDocuments(query);
 
