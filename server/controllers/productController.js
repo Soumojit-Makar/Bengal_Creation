@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const Vendor = require("../models/vendor");
+const Category = require("../models/category");
 require('dotenv').config();
 const createProduct = async (req, res) => {
   try {
@@ -53,8 +54,13 @@ const getAllProducts = async (req, res) => {
     }
     console.log("Base query:", query);
     if (category) {
-      const categories = category.split(",").map((cat) => cat.trim());
-      query["$or"] = categories.map((cat) => ({ category: cat }));
+      const cat = await Category.findOne({ name: category });
+      if (cat) {
+        query["$or"] = query["$or"] || [];
+        query["$or"].push({ category: cat._id });
+      } else {
+        console.log(`Category "${category}" not found, ignoring category filter`);
+      }
     }
     console.log("Final query:", query);
 
