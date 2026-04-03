@@ -54,28 +54,28 @@ function ProductDetailPage({
   (x) => x.id !== p.id
 );
 
-  const changeImg = useCallback(
-    (dir) => setImgIdx((i) => (i + dir + imgs.length) % imgs.length),
-    [imgs.length],
-  );
+// Hooks FIRST
+const changeImg = useCallback(
+  (dir) => setImgIdx((i) => (i + dir + imgs.length) % imgs.length),
+  [imgs.length]
+);
 
-  const shareProduct = useCallback(() => {
-    const url = window.location.href;
-    if (navigator.share) {
-      navigator
-        .share({
-          title: p.name,
-          text: `Check out this product: ${p.name}`,
-          url,
-        })
-        .catch((err) => console.error("Share failed:", err));
-    } else {
-      navigator.clipboard
-        .writeText(url)
-        .then(() => alert("Product URL copied to clipboard!"))
-        .catch((err) => console.error("Copy failed:", err));
-    }
-  }, [p]);
+const shareProduct = useCallback(() => {
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator
+      .share({ title: p?.name, text: `Check out this product: ${p?.name}`, url })
+      .catch((err) => console.error("Share failed:", err));
+  } else {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => alert("Product URL copied to clipboard!"))
+      .catch((err) => console.error("Copy failed:", err));
+  }
+}, [p]);
+
+// ✅ THEN condition
+if (!p) return null;
   if (loading) {
     return <div style={{ padding: 40 }}>Loading product...</div>;
   }
