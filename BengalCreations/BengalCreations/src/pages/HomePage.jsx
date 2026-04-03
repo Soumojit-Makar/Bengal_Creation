@@ -50,12 +50,12 @@ function HomePage({
           woodenData,
           sweetsData,
         ] = await Promise.all([
-          fetchProductsPageByCategory("Handloom Sarees"),
-          fetchProductsPageByCategory("Dokra Art"),
-          fetchProductsPageByCategory("Jute Products"),
-          fetchProductsPageByCategory("Terracotta Crafts"),
-          fetchProductsPageByCategory("Wooden Handicrafts"),
-          fetchProductsPageByCategory("Bengal Sweets"),
+          fetchProductsPageByCategory(category="Handloom Sarees"),
+          fetchProductsPageByCategory(category="Dokra Art"),
+          fetchProductsPageByCategory(category="Jute Products"),
+          fetchProductsPageByCategory(category="Terracotta Crafts"),
+          fetchProductsPageByCategory(category="Wooden Handicrafts"),
+          fetchProductsPageByCategory(category="Bengal Sweets"),
         ]);
         setHandloomSarees(handloomData.products);
         setDokraArt(dokraData.products);
