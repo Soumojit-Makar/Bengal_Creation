@@ -41,9 +41,6 @@ function ProductDetailPage({
     window.scrollTo({ top: 0, behavior: "smooth" });
     setImgIdx(0);
   }, [id]);
-
-  if (!p) return null;
-
   const imgs = p.images?.length
     ? p.images
     : [{ url: p.thumb || "", label: "Product View" }];
@@ -75,10 +72,12 @@ const shareProduct = useCallback(() => {
 }, [p]);
 
 // ✅ THEN condition
-if (!p) return null;
   if (loading) {
     return <div style={{ padding: 40 }}>Loading product...</div>;
   }
+  if (!p) {
+  return <div style={{ padding: 40 }}>Product not found</div>;
+}
   return (
     <div className="">
       <button className="pd-back-btn" onClick={() => navigate(-1)}>
