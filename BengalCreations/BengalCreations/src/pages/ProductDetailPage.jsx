@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchAllVendors, getProductById } from "../api/api";
-import { getProductsByVendor } from "../../../../server/controllers/productController";
+import { fetchAllVendors, fetchVendorProducts, getProductById } from "../api/api";
 
 function ProductDetailPage({
   cart,
@@ -22,7 +21,7 @@ function ProductDetailPage({
 
   useEffect(() => {
     if (p?.vendorId) {
-      getProductsByVendor(p.vendorId)
+      fetchVendorProducts(p.vendorId)
         .then(setVendorProducts)
         .catch(console.error);
     }
