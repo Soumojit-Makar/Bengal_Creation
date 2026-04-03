@@ -1,13 +1,13 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { fetchAllCategories, fetchProductsPage } from "../api/api";
+import { fetchAllCategories, fetchProductsPage, fetchProductsPageByCategory } from "../api/api";
 
 const PAGE_SIZE = 10;
 
 function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
-  const navigate     = useNavigate();
-  const location     = useLocation();
+  const navigate      = useNavigate();
+  const location      = useLocation();
   const locationState = location.state || {};
 
   const [catOptions, setCatOptions] = useState([]);
@@ -30,6 +30,35 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
 
   const loaderRef = useRef(null);
 
+  // Shared fetch logic — uses category-specific endpoint when category filter is set
+  const doFetch = useCallback(async (pageNum, currentFilters) => {
+    if (currentFilters.category) {
+      return fetchProductsPageByCategory({
+        page:  pageNum,
+        limit: PAGE_SIZE,
+        category: currentFilters.category,
+      });
+    }
+    return fetchProductsPage({
+      page:  pageNum,
+      limit: PAGE_SIZE,
+      search: currentFilters.search,
+    });
+  }, []);
+
+  // Client-side filter for district / price / rating (not supported server-side)
+  const clientFilter = useCallback((prods, f, rating) => {
+    return prods.filter((p) => {
+      if (f.district && p.district !== f.district) return false;
+      if (f.priceMin && p.price < parseInt(f.priceMin)) return false;
+      if (f.priceMax && p.price > parseInt(f.priceMax)) return false;
+      if (rating > 0 && p.rating < rating) return false;
+      // When no category endpoint used, also filter by search name locally
+      if (!f.category && f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false;
+      return true;
+    });
+  }, []);
+
   // Reset + reload when filters change
   const resetAndLoad = useCallback(async (newFilters, rating) => {
     setLoading(true);
@@ -38,8 +67,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
     setHasMore(true);
     setInitLoaded(false);
     try {
-      const res = await fetchProductsPage({ page: 1, limit: PAGE_SIZE, search: newFilters.search });
-      // Client-side filter for category/district/price/rating since server only supports search
+      const res = await doFetch(1, newFilters);
       const filtered = clientFilter(res.products, newFilters, rating);
       setProducts(filtered);
       setTotal(res.pagination.total);
@@ -51,14 +79,14 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
       setLoading(false);
       setInitLoaded(true);
     }
-  }, []);
+  }, [doFetch, clientFilter]);
 
   // Load next page (append)
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
-      const res = await fetchProductsPage({ page, limit: PAGE_SIZE, search: filters.search });
+      const res = await doFetch(page, filters);
       const filtered = clientFilter(res.products, filters, ratingFilter);
       setProducts((prev) => {
         const ids = new Set(prev.map((p) => p.id));
@@ -71,19 +99,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page, filters, ratingFilter]);
-
-  // Client-side filter (for category/district/price/rating applied on already-fetched data)
-  function clientFilter(prods, f, rating) {
-    return prods.filter((p) => {
-      if (f.category && p.category !== f.category) return false;
-      if (f.district && p.district !== f.district) return false;
-      if (f.priceMin && p.price < parseInt(f.priceMin)) return false;
-      if (f.priceMax && p.price > parseInt(f.priceMax)) return false;
-      if (rating > 0 && p.rating < rating) return false;
-      return true;
-    });
-  }
+  }, [loading, hasMore, page, filters, ratingFilter, doFetch, clientFilter]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {

@@ -40,7 +40,7 @@ const getAllProducts = async (req, res) => {
     const limit    = parseInt(req.query.limit) || 10;
     const category = req.query.category || "";
     const search   = req.query.search   || "";
-
+    console.log("Query params:", { page, limit, category, search });
     const filter = {};
     if (category) filter["$or"] = []; // handled below
 

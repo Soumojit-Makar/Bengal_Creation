@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { cloudinaryResize } from "../utils/helpers";
 
-const CARD_WIDTH   = 180;  // px per card (reduced)
+const CARD_WIDTH   = 180;  // px per card
 const CARD_GAP     = 14;
 const AUTO_MS      = 3500; // auto-advance interval
 
@@ -19,30 +19,59 @@ function SkeletonCard() {
 }
 
 function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 }) {
-  const [page,      setPage]      = useState(0);
-  const [paused,    setPaused]    = useState(false);
-  const startX     = useRef(0);
-  const timerRef   = useRef(null);
+  const [page,   setPage]   = useState(0);
+  const [paused, setPaused] = useState(false);
+  const trackOuterRef = useRef(null);
+  const startX        = useRef(0);
+  const timerRef      = useRef(null);
 
-  const totalPages = Math.max(1, Math.ceil((products?.length || 0) / visibleCount));
+  const safeProducts  = products || [];
+  const totalPages    = Math.max(1, Math.ceil(safeProducts.length / visibleCount));
+  const stepPx        = visibleCount * (CARD_WIDTH + CARD_GAP);
+
+  // Scroll the outer container to the correct position
+  const scrollToPage = useCallback((p) => {
+    const el = trackOuterRef.current;
+    if (!el) return;
+    el.scrollTo({ left: p * stepPx, behavior: "smooth" });
+  }, [stepPx]);
 
   const goTo = useCallback((p) => {
-    setPage(((p % totalPages) + totalPages) % totalPages);
-  }, [totalPages]);
+    const clamped = ((p % totalPages) + totalPages) % totalPages;
+    setPage(clamped);
+    scrollToPage(clamped);
+  }, [totalPages, scrollToPage]);
 
   const move = useCallback((dir) => {
-    setPage((p) => ((p + dir + totalPages) % totalPages));
-  }, [totalPages]);
+    setPage((prev) => {
+      const next = ((prev + dir + totalPages) % totalPages);
+      scrollToPage(next);
+      return next;
+    });
+  }, [totalPages, scrollToPage]);
 
   // Reset on product change
-  useEffect(() => { setPage(0); }, [products]);
+  useEffect(() => {
+    setPage(0);
+    if (trackOuterRef.current) {
+      trackOuterRef.current.scrollLeft = 0;
+    }
+  }, [products]);
 
   // Auto-advance
   useEffect(() => {
-    if (paused || loading || products?.length <= visibleCount) return;
+    if (paused || loading || safeProducts.length <= visibleCount) return;
     timerRef.current = setInterval(() => move(1), AUTO_MS);
     return () => clearInterval(timerRef.current);
-  }, [paused, loading, products, visibleCount, move]);
+  }, [paused, loading, safeProducts.length, visibleCount, move]);
+
+  // Sync page dot when user manually scrolls
+  const handleScroll = useCallback(() => {
+    const el = trackOuterRef.current;
+    if (!el) return;
+    const p = Math.round(el.scrollLeft / stepPx);
+    setPage(Math.min(p, totalPages - 1));
+  }, [stepPx, totalPages]);
 
   const handleTouchStart = (e) => { startX.current = e.touches[0].clientX; };
   const handleTouchEnd   = (e) => {
@@ -50,8 +79,6 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
     if (diff > 50)  move(1);
     if (diff < -50) move(-1);
   };
-
-  const visibleOffset = page * visibleCount * (CARD_WIDTH + CARD_GAP);
 
   return (
     <div className="section alpona-bg">
@@ -64,18 +91,32 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <button className="carousel-nav prev" onClick={() => move(-1)} aria-label="Previous">‹</button>
+        <button
+          className="carousel-nav prev"
+          onClick={() => move(-1)}
+          aria-label="Previous"
+        >
+          ‹
+        </button>
 
-        <div className="carousel-track-outer">
+        {/* Outer: overflow hidden, we drive scrollLeft programmatically */}
+        <div
+          className="carousel-track-outer"
+          ref={trackOuterRef}
+          onScroll={handleScroll}
+          style={{ overflowX: "hidden", scrollBehavior: "smooth" }}
+        >
           <div
             className="carousel-track"
-            style={{ transform: `translateX(-${visibleOffset}px)`, gap: `${CARD_GAP}px` }}
+            style={{ gap: `${CARD_GAP}px` }}
           >
             {loading
               ? Array.from({ length: visibleCount }).map((_, i) => <SkeletonCard key={i} />)
-              : (products || []).map((p) => {
+              : safeProducts.map((p) => {
                   const rawImg = p?.images?.[0]?.url || p?.thumb;
-                  const disc   = p.original > p.price ? Math.round((1 - p.price / p.original) * 100) : 0;
+                  const disc   = p.original > p.price
+                    ? Math.round((1 - p.price / p.original) * 100)
+                    : 0;
 
                   return (
                     <div
@@ -91,7 +132,10 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
                             alt={p.name}
                             loading="lazy"
                             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                            onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "flex";
+                            }}
                           />
                         ) : null}
                         <div style={{
@@ -138,7 +182,13 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
           </div>
         </div>
 
-        <button className="carousel-nav next" onClick={() => move(1)} aria-label="Next">›</button>
+        <button
+          className="carousel-nav next"
+          onClick={() => move(1)}
+          aria-label="Next"
+        >
+          ›
+        </button>
       </div>
 
       {/* Dots */}
