@@ -1,6 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchAllVendors, fetchVendorProducts, getProductById } from "../api/api";
+import {
+  fetchAllVendors,
+  fetchVendorProducts,
+  getProductById,
+} from "../api/api";
 
 function ProductDetailPage({
   cart,
@@ -18,7 +22,7 @@ function ProductDetailPage({
   const [loading, setLoading] = useState(true);
   const [p, setP] = useState(null);
   const [vendorProducts, setVendorProducts] = useState([]);
-
+  console.log("ID:", id);
   useEffect(() => {
     if (p?.vendorId) {
       fetchVendorProducts(p.vendorId)
@@ -28,12 +32,19 @@ function ProductDetailPage({
   }, [p?.vendorId]);
   useEffect(() => {
     setLoading(true);
-
+    console.log("Fetching product details for ID:", id);
     fetchAllVendors().then(setVendors).catch(console.error);
 
     getProductById(id)
-      .then(setP)
-      .catch(console.error)
+      .then((product) => {
+        console.log("Fetched product:", product);
+        setP(product);
+      })
+      .catch((err) => {
+        console.error("Error fetching product:", err);
+        console.log("Product ID was:", id);
+        alert("Failed to load product details. Please try again later.");
+      })
       .finally(() => setLoading(false));
   }, [id]);
   // Scroll to top when navigating between products
@@ -41,43 +52,141 @@ function ProductDetailPage({
     window.scrollTo({ top: 0, behavior: "smooth" });
     setImgIdx(0);
   }, [id]);
-  const imgs = p.images?.length
+
+  // Hooks FIRST
+  const imgs = p?.images?.length
     ? p.images
-    : [{ url: p.thumb || "", label: "Product View" }];
+    : [{ url: p?.thumb || "", label: "Product View" }];
+  const changeImg = useCallback(
+    (dir) => setImgIdx((i) => (i + dir + imgs.length) % imgs.length),
+    [imgs.length],
+  );
+
+  const shareProduct = useCallback(() => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator
+        .share({
+          title: p?.name,
+          text: `Check out this product: ${p?.name}`,
+          url,
+        })
+        .catch((err) => console.error("Share failed:", err));
+    } else {
+      navigator.clipboard
+        .writeText(url)
+        .then(() => alert("Product URL copied to clipboard!"))
+        .catch((err) => console.error("Copy failed:", err));
+    }
+  }, [p]);
+
+  // ✅ THEN condition
+   if (loading) {
+    const shimmer = {
+      position: "relative",
+      overflow: "hidden",
+      background: "#eee",
+      borderRadius: 8,
+    };
+
+    const shimmerAfter = {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: "-150px",
+      height: "100%",
+      width: "150px",
+      background:
+        "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+      animation: "shimmer 1.2s infinite",
+    };
+
+    return (
+      <div style={{ padding: 32, maxWidth: 1200, margin: "0 auto" }}>
+        {/* Keyframes inside style tag */}
+        <style>
+          {`
+          @keyframes shimmer {
+            100% {
+              transform: translateX(300px);
+            }
+          }
+        `}
+        </style>
+
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30 }}
+        >
+          {/* LEFT: Image */}
+          <div>
+            <div style={{ ...shimmer, height: 320 }}>
+              <div style={shimmerAfter}></div>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+              {[...Array(4)].map((_, i) => (
+                <div key={i} style={{ ...shimmer, width: 60, height: 60 }}>
+                  <div style={shimmerAfter}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT: Content */}
+          <div>
+            <div
+              style={{ ...shimmer, height: 12, width: "40%", marginBottom: 10 }}
+            >
+              <div style={shimmerAfter}></div>
+            </div>
+
+            <div
+              style={{ ...shimmer, height: 28, width: "70%", marginBottom: 12 }}
+            >
+              <div style={shimmerAfter}></div>
+            </div>
+
+            <div style={{ ...shimmer, height: 14, marginBottom: 10 }}>
+              <div style={shimmerAfter}></div>
+            </div>
+
+            <div style={{ ...shimmer, height: 14, marginBottom: 10 }}>
+              <div style={shimmerAfter}></div>
+            </div>
+
+            <div
+              style={{ ...shimmer, height: 24, width: 120, margin: "16px 0" }}
+            >
+              <div style={shimmerAfter}></div>
+            </div>
+
+            {[...Array(4)].map((_, i) => (
+              <div key={i} style={{ ...shimmer, height: 12, marginBottom: 8 }}>
+                <div style={shimmerAfter}></div>
+              </div>
+            ))}
+
+            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} style={{ ...shimmer, height: 40, width: 120 }}>
+                  <div style={shimmerAfter}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (!p) {
+    return <div style={{ padding: 40 }}>Product not found</div>;
+  }
+  console.log("Product detail loading state:", { loading, p });
 
   const disc = p.original ? Math.round((1 - p.price / p.original) * 100) : 0;
   const v = vendors?.find((x) => x.id === p.vendorId);
- const otherVendorProducts = vendorProducts.filter(
-  (x) => x.id !== p.id
-);
+  const otherVendorProducts = vendorProducts.filter((x) => x.id !== p.id);
 
-// Hooks FIRST
-const changeImg = useCallback(
-  (dir) => setImgIdx((i) => (i + dir + imgs.length) % imgs.length),
-  [imgs.length]
-);
-
-const shareProduct = useCallback(() => {
-  const url = window.location.href;
-  if (navigator.share) {
-    navigator
-      .share({ title: p?.name, text: `Check out this product: ${p?.name}`, url })
-      .catch((err) => console.error("Share failed:", err));
-  } else {
-    navigator.clipboard
-      .writeText(url)
-      .then(() => alert("Product URL copied to clipboard!"))
-      .catch((err) => console.error("Copy failed:", err));
-  }
-}, [p]);
-
-// ✅ THEN condition
-  if (loading) {
-    return <div style={{ padding: 40 }}>Loading product...</div>;
-  }
-  if (!p) {
-  return <div style={{ padding: 40 }}>Product not found</div>;
-}
   return (
     <div className="">
       <button className="pd-back-btn" onClick={() => navigate(-1)}>
@@ -87,8 +196,8 @@ const shareProduct = useCallback(() => {
         {/* Gallery */}
         <div className="pd-gallery">
           <div className="pd-main-img">
-            <img src={imgs[imgIdx].url} alt={imgs[imgIdx].label} />
-            <div className="pd-img-label">{imgs[imgIdx].label}</div>
+            <img src={imgs[imgIdx]?.url} alt={imgs[imgIdx]?.label} />
+            <div className="pd-img-label">{imgs[imgIdx]?.label}</div>
             {imgs.length > 1 && (
               <>
                 <button
