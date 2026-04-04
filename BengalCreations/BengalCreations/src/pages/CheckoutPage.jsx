@@ -25,10 +25,11 @@ const BANK_DETAILS = {
 
 // ── Dynamic UPI QR using Google Chart API (no library needed) ─────────────────
 function UpiQrCode({ upiId, amount, merchantName, orderId }) {
-  if (!upiId) return null;
-  // UPI deep-link: upi://pay?pa=ID&pn=NAME&am=AMOUNT&tn=NOTE&cu=INR
-  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName || "Bengal Creations")}&am=${amount}&tn=${encodeURIComponent("Order " + orderId)}&cu=INR`;
-  const qrUrl   = `https://chart.googleapis.com/chart?chs=220x220&cht=qr&chl=${encodeURIComponent(upiLink)}&choe=UTF-8`;
+  if (!upiId) return <p>Loading QR...</p>;
+
+  const upiLink = `upi://pay?pa=${upiId}&pn=${merchantName || "Bengal Creations"}&am=${amount}&cu=INR`;
+
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
 
   const handleOpenUpi = () => {
     // On mobile this opens the UPI app directly
