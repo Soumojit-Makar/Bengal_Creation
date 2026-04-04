@@ -1,7 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { sendChatMessage } from "../api/api";
 
-const WELCOME = "👋 Namaste! I'm the Bengal Creations assistant. Ask me about our products, delivery, returns, or anything else about our store!";
+const names = [
+  "Asha", "Rani", "Sima", "Puja", "Anita",
+  "Sunita", "Rekha", "Kavita", "Gita", "Mina",
+  "Lata", "Nita", "Sita", "Rupa", "Dipa",
+  "Tina", "Rita", "Mala", "Bina", "Nisha",
+  "Pinky", "Sweety", "Neha", "Pooja", "Kiran",
+  "Anu", "Shila", "Babita", "Arpita", "Sonia",
+  "Rima"
+];
+
+const randomName = names[Math.floor(Math.random() * names.length)];
+
+const WELCOME = `Hello, my name is ${randomName}. I’m here to assist you. How may I help you today?`;
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
