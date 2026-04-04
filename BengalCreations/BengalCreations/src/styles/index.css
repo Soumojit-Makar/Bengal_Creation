@@ -2100,6 +2100,12 @@ footer {
     display: none;
   }
 }
+/* cart button  */
+@media (max-width: 500px) {
+  .cartbtn{
+    display: none;
+  }
+}
 .bgabout {
   background-image: url("../assets/aboutbg.png");
   background-size: cover;        /* 🔥 removes empty space */
