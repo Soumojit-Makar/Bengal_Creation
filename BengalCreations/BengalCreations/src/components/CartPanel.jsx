@@ -1,10 +1,12 @@
+import { useNavigate } from "react-router-dom";
+
 function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
   // Use item.price (populated from backend) for total; fallback to product price
   const total = cart.reduce(
     (sum, item) => sum + (item.price ?? item.product?.price ?? 0) * item.quantity,
     0
   );
-
+    const navigate = useNavigate();
   return (
     <div
       className={`cart-overlay${isOpen ? " open" : ""}`}
@@ -15,7 +17,7 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
           <h3>🛒 Your Cart</h3>
           <button className="cart-close" onClick={onClose}>✕</button>
         </div>
-        <div className="cart-items">
+        <div  className="cart-items">
           {!cart.length ? (
             <div className="cart-empty">
               <div className="cart-empty-icon">🛍️</div>
@@ -25,10 +27,10 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
             cart.map((item) => {
               const p = item.product;
               return (
-                <div className="cart-item" key={item._id}>
+                <div onClick={navigate(`/product/${p._id}`)} className="cart-item" key={item._id}>
                   <div className="cart-item-img">
                     {p.images?.[0] ? (
-                      <img src={p.images[0]} alt={p.name} />
+                      <img src={p.images[0]} alt={p.name}/>
                     ) : (
                       p.emoji
                     )}
