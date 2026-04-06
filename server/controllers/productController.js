@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 const Vendor = require("../models/vendor");
 const Category = require("../models/category");
+const mongoose = require("mongoose");
 require('dotenv').config();
 const createProduct = async (req, res) => {
   try {
@@ -130,6 +131,14 @@ const getProductsByVendor = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const getProductByCategory=async(req,res)=>{
+  try{
+     const { category } = req.params;
+    const products =await Product.find({category})
+  }catch(err){
+    res.status(500).json({ error: err.message });
+  }
+}
 
 module.exports = {
   createProduct,
@@ -140,4 +149,5 @@ module.exports = {
   getLowStockProducts,
   bulkUpdateStock,
   getProductsByVendor,
+  getProductByCategory
 };
