@@ -96,8 +96,9 @@ function findRelevantContext(question, products = []) {
 }
 
 // ─── Build Prompt ──────────────────────────────────────────────────────
-function buildPrompt(question, context) {
+function buildPrompt(question, context,name) {
   return `You are a friendly customer support assistant for Bengal Creations (by Digital Indian).
+  and Your name is ${name}
 
 Use ONLY the context below to answer the customer's question.
 
@@ -120,7 +121,7 @@ ANSWER:`;
 // ─── Main Controller (Groq Version) ────────────────────────────────────
 const chat = async (req, res) => {
   try {
-    const { question, history = [] } = req.body;
+    const { question, history = [] ,name} = req.body;
 
     if (!question || question.trim().length === 0) {
       return res.status(400).json({ msg: "Question is required" });
@@ -136,7 +137,7 @@ const chat = async (req, res) => {
     } catch (e) {}
 
     const context = findRelevantContext(question, products);
-    const prompt = buildPrompt(question, context);
+    const prompt = buildPrompt(question, context,name);
 
     // ─── GROQ API CALL ────────────────────────────────────────────────
     const response = await fetch(

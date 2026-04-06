@@ -294,11 +294,11 @@ export const deleteAddress = async (addressId) => {
 };
 
 // ─── Chatbot ─────────────────────────────────────────────────────────────────
-export const sendChatMessage = async (question, history = []) => {
+export const sendChatMessage = async (question, history = [],name) => {
   const res = await fetch(`${API}/chatbot`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, history }),
+    body: JSON.stringify({ question, history,name }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.msg || "Chatbot error");

@@ -35,7 +35,7 @@ export default function Chatbot() {
     try {
       // Build history for context (skip welcome message)
       const history = messages.slice(1).map(m => ({ role: m.role, content: m.content }));
-      const { answer } = await sendChatMessage(q, history);
+      const { answer } = await sendChatMessage(q, history,randomName);
       setMessages(prev => [...prev, { role: "assistant", content: answer }]);
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't connect. Please try again or contact info@digitalindian.co.in" }]);
