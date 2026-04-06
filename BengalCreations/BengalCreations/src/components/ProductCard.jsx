@@ -25,7 +25,8 @@ const ProductCard = memo(function ProductCard({ p, inCart, inWish, onAddCart, on
         </button>
       </div>
       <div className="product-body">
-        <div className="product-name">{p.name}</div>
+        <div className="product-name"> {
+          p.name.split(" ").length > 50 ? p.name.split(" ").slice(0, 50).join(" ") + "...": p.name}</div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
           <span className="product-price">₹{p.price.toLocaleString()}</span>
           {p.original > p.price && (
