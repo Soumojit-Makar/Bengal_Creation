@@ -9,6 +9,7 @@ const {
   getLowStockProducts,
   bulkUpdateStock,
   getProductsByVendor,
+  getProductByCategory,
 } = require("../controllers/productController");
 
 router.post("/", createProduct);
@@ -50,7 +51,14 @@ router.get("/vendor/:vendorId", getProductsByVendor);
   #swagger.parameters['vendorId'] = { in: 'path', required: true, type: 'string' }
   #swagger.responses[200] = { description: 'Products list', schema: [{ $ref: '#/definitions/Product' }] }
 */
+router.get("/category/:category",getProductByCategory);
 
+/*
+  #swagger.tags = ['Products']
+  #swagger.summary = 'Get all products by CategoryId MongoDB ObjectId'
+  #swagger.parameters['vendorId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Products list', schema: [{ $ref: '#/definitions/Product' }] }
+*/
 router.get("/", getAllProducts);
 /*
   #swagger.tags = ['Products']
