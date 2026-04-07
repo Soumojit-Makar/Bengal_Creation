@@ -10,6 +10,7 @@ const {
   bulkUpdateStock,
   getProductsByVendor,
   getProductByCategory,
+  getProducs,
 } = require("../controllers/productController");
 
 router.post("/", createProduct);
@@ -65,7 +66,12 @@ router.get("/", getAllProducts);
   #swagger.summary = 'Get all products'
   #swagger.responses[200] = { description: 'All products', schema: [{ $ref: '#/definitions/Product' }] }
 */
-
+router.get("/all", getProducs);
+/*
+  #swagger.tags = ['Products']
+  #swagger.summary = 'Get all products'
+  #swagger.responses[200] = { description: 'All products', schema: [{ $ref: '#/definitions/Product' }] }
+*/
 router.get("/:id", getProductById);
 /*
   #swagger.tags = ['Products']
