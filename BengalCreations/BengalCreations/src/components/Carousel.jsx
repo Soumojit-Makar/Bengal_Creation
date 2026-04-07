@@ -59,11 +59,11 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
   }, [products]);
 
   // Auto-advance
-  useEffect(() => {
-    if (paused || loading || safeProducts.length <= visibleCount) return;
-    timerRef.current = setInterval(() => move(1), AUTO_MS);
-    return () => clearInterval(timerRef.current);
-  }, [paused, loading, safeProducts.length, visibleCount, move]);
+  // useEffect(() => {
+  //   if (paused || loading || safeProducts.length <= visibleCount) return;
+  //   timerRef.current = setInterval(() => move(1), AUTO_MS);
+  //   return () => clearInterval(timerRef.current);
+  // }, [paused, loading, safeProducts.length, visibleCount, move]);
 
   // Sync page dot when user manually scrolls
   const handleScroll = useCallback(() => {
@@ -104,6 +104,8 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
           className="carousel-track-outer"
           ref={trackOuterRef}
           onScroll={handleScroll}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           style={{ overflowX: "hidden", scrollBehavior: "smooth" }}
         >
           <div
