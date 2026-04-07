@@ -421,8 +421,9 @@ h5 {
 /* PRODUCT CARDS */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 0.5fr));
   gap: 20px;
+  user-select: none;
 }
 .product-card {
   background: white;
@@ -431,6 +432,8 @@ h5 {
   overflow: hidden;
   box-shadow: var(--shadow);
   transition: all 0.3s;
+  height: 250px;
+  cursor: pointer;
 }
 .product-card:hover {
   transform: translateY(-4px);
@@ -439,7 +442,7 @@ h5 {
 }
 .product-img {
   position: relative;
-  height: 70%;
+  height: 50%;
   overflow: hidden;
   background: var(--cream2);
   cursor: pointer;
@@ -488,7 +491,7 @@ h5 {
   transform: scale(1.2);
 }
 .product-body {
-  padding: 16px;
+  padding: 6px;
 }
 .product-name {
   font-family: "Playfair Display", serif;

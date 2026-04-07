@@ -1,13 +1,25 @@
 import { memo } from "react";
 
-const ProductCard = memo(function ProductCard({ p, inCart, inWish, onAddCart, onToggleWish, onShowProduct }) {
-  const disc = p.original > 0
-    ? Math.round((1 - p.price / p.original) * 100)
-    : 0;
-
+const ProductCard = memo(function ProductCard({
+  p,
+  inCart,
+  inWish,
+  onAddCart,
+  onToggleWish,
+  onShowProduct,
+}) {
+  const disc =
+    p.original > 0 ? Math.round((1 - p.price / p.original) * 100) : 0;
+const getShortName = (name) => {
+  if (!name) return "";
+  const words = name.trim().split(/\s+/);
+  return words.length > 5
+    ? words.slice(0, 5).join(" ") + "..."
+    : name;
+};
   return (
-    <div className="product-card">
-      <div className="product-img" onClick={() => onShowProduct(p.id)}>
+    <div onClick={() => onShowProduct(p.id)} className="product-card">
+      <div className="product-img" >
         {p.thumb ? (
           <img src={p.thumb} alt={p.name} loading="lazy" />
         ) : (
@@ -20,14 +32,16 @@ const ProductCard = memo(function ProductCard({ p, inCart, inWish, onAddCart, on
             e.stopPropagation();
             onToggleWish(p.id);
           }}
-        > 
+        >
           {inWish ? "❤️" : "🤍"}
         </button>
       </div>
       <div className="product-body">
-        <div className="product-name"> {
-          p.name.length > 50 ? p.name.split(" ").slice(0, 50).join(" ") + "...": p.name}</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+        <div className="product-name">
+          {console.log(p.name.split(/\s+/).length)}
+        {getShortName(p.name)}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline" }}>
           <span className="product-price">₹{p.price.toLocaleString()}</span>
           {p.original > p.price && (
             <span className="product-price-original">
