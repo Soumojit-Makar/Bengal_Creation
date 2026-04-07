@@ -1,13 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { fetchAllCategories, fetchProductsPage, fetchProductsPageByCategory } from "../api/api";
+import {
+  fetchAllCategories,
+  fetchProductsPage,
+  fetchProductsPageByCategory,
+} from "../api/api";
 
 const PAGE_SIZE = 10;
 
 function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
-  const navigate      = useNavigate();
-  const location      = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const locationState = location.state || {};
 
   const [catOptions, setCatOptions] = useState([]);
@@ -16,17 +20,17 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
     district: "",
     priceMin: "",
     priceMax: "",
-    search:   locationState.searchQuery || "",
+    search: locationState.searchQuery || "",
   });
   const [ratingFilter, setRatingFilter] = useState(0);
 
   // Pagination state
-  const [products,   setProducts]   = useState([]);
-  const [page,       setPage]       = useState(1);
-  const [hasMore,    setHasMore]    = useState(true);
-  const [loading,    setLoading]    = useState(false);
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [initLoaded, setInitLoaded] = useState(false);
-  const [total,      setTotal]      = useState(0);
+  const [total, setTotal] = useState(0);
 
   const loaderRef = useRef(null);
 
@@ -34,13 +38,13 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   const doFetch = useCallback(async (pageNum, currentFilters) => {
     if (currentFilters.category) {
       return fetchProductsPageByCategory({
-        page:  pageNum,
+        page: pageNum,
         limit: PAGE_SIZE,
         category: currentFilters.category,
       });
     }
     return fetchProductsPage({
-      page:  pageNum,
+      page: pageNum,
       limit: PAGE_SIZE,
       search: currentFilters.search,
     });
@@ -54,32 +58,40 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
       if (f.priceMax && p.price > parseInt(f.priceMax)) return false;
       if (rating > 0 && p.rating < rating) return false;
       // When no category endpoint used, also filter by search name locally
-      if (!f.category && f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false;
+      if (
+        !f.category &&
+        f.search &&
+        !p.name.toLowerCase().includes(f.search.toLowerCase())
+      )
+        return false;
       return true;
     });
   }, []);
 
   // Reset + reload when filters change
-  const resetAndLoad = useCallback(async (newFilters, rating) => {
-    setLoading(true);
-    setProducts([]);
-    setPage(1);
-    setHasMore(true);
-    setInitLoaded(false);
-    try {
-      const res = await doFetch(1, newFilters);
-      const filtered = clientFilter(res.products, newFilters, rating);
-      setProducts(filtered);
-      setTotal(res.pagination.total);
-      setHasMore(res.pagination.hasMore);
-      setPage(2);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-      setInitLoaded(true);
-    }
-  }, [doFetch, clientFilter]);
+  const resetAndLoad = useCallback(
+    async (newFilters, rating) => {
+      setLoading(true);
+      setProducts([]);
+      setPage(1);
+      setHasMore(true);
+      setInitLoaded(false);
+      try {
+        const res = await doFetch(1, newFilters);
+        const filtered = clientFilter(res.products, newFilters, rating);
+        setProducts(filtered);
+        setTotal(res.pagination.total);
+        setHasMore(res.pagination.hasMore);
+        setPage(2);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        setInitLoaded(true);
+      }
+    },
+    [doFetch, clientFilter],
+  );
 
   // Load next page (append)
   const loadMore = useCallback(async () => {
@@ -105,14 +117,22 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   useEffect(() => {
     if (!initLoaded) return;
     const observer = new IntersectionObserver(
-      (entries) => { if (entries[0].isIntersecting && hasMore && !loading) loadMore(); },
-      { threshold: 0.1 }
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) loadMore();
+      },
+      { threshold: 0.1 },
     );
+
+    
     const el = loaderRef.current;
     if (el) observer.observe(el);
-    return () => { if (el) observer.unobserve(el); };
+    return () => {
+      if (el) observer.unobserve(el);
+    };
   }, [initLoaded, hasMore, loading, loadMore]);
-
+const applyFiltersWith = (newFilters) => {
+  resetAndLoad(newFilters, ratingFilter);
+};
   // Initial load + reload on location change
   useEffect(() => {
     fetchAllCategories().then(setCatOptions).catch(console.error);
@@ -121,7 +141,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
       district: "",
       priceMin: "",
       priceMax: "",
-      search:   location.state?.searchQuery || "",
+      search: location.state?.searchQuery || "",
     };
     setFilters(newFilters);
     resetAndLoad(newFilters, 0);
@@ -131,7 +151,13 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   const applyFilters = () => resetAndLoad(filters, ratingFilter);
 
   const clearFilters = useCallback(() => {
-    const f = { category: "", district: "", priceMin: "", priceMax: "", search: "" };
+    const f = {
+      category: "",
+      district: "",
+      priceMin: "",
+      priceMax: "",
+      search: "",
+    };
     setFilters(f);
     setRatingFilter(0);
     resetAndLoad(f, 0);
@@ -141,7 +167,11 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   const SkeletonGrid = () => (
     <div className="products-grid">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-        <div key={i} className="product-card skeleton-card" style={{ minHeight: 260 }}>
+        <div
+          key={i}
+          className="product-card skeleton-card"
+          style={{ minHeight: 260 }}
+        >
           <div className="skeleton-img" style={{ height: 180 }} />
           <div style={{ padding: 12 }}>
             <div className="skeleton-line title" style={{ marginBottom: 8 }} />
@@ -166,7 +196,9 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
               type="text"
               placeholder="Name, category..."
               value={filters.search}
-              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, search: e.target.value }))
+              }
               onKeyDown={(e) => e.key === "Enter" && applyFilters()}
             />
           </div>
@@ -176,11 +208,22 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
             <select
               className="filter-select"
               value={filters.category}
-              onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}
+              onChange={(e) => {
+                const value=e.target.value
+
+                setFilters((f) => { 
+                  const updated={...f,category:value};
+                  // console.log(updated.category)
+                  applyFiltersWith(updated);
+                  return updated;
+                 });
+              }}
             >
               <option value="">All Categories</option>
               {catOptions.map((c) => (
-                <option key={c._id ?? c.name} value={c.name}>{c.name}</option>
+                <option key={c._id ?? c.name} value={c.name}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </div>
@@ -190,10 +233,21 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
             <select
               className="filter-select"
               value={filters.district}
-              onChange={(e) => setFilters((f) => ({ ...f, district: e.target.value }))}
+              onChange={(e) => {
+                const value=e.target.value
+
+                setFilters((f) => { 
+                  const updated={...f,district:value};
+                  // console.log(updated.category)
+                  applyFiltersWith(updated);
+                  return updated;
+                 });
+              }}
             >
               <option value="">All Districts</option>
-              {WB_DISTRICTS.map((d) => <option key={d}>{d}</option>)}
+              {WB_DISTRICTS.map((d) => (
+                <option key={d}>{d}</option>
+              ))}
             </select>
           </div>
 
@@ -201,14 +255,22 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
             <label>Price Range (₹)</label>
             <div className="price-range">
               <input
-                className="filter-input" type="number" placeholder="Min"
+                className="filter-input"
+                type="number"
+                placeholder="Min"
                 value={filters.priceMin}
-                onChange={(e) => setFilters((f) => ({ ...f, priceMin: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, priceMin: e.target.value }))
+                }
               />
               <input
-                className="filter-input" type="number" placeholder="Max"
+                className="filter-input"
+                type="number"
+                placeholder="Max"
                 value={filters.priceMax}
-                onChange={(e) => setFilters((f) => ({ ...f, priceMax: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, priceMax: e.target.value }))
+                }
               />
             </div>
           </div>
@@ -228,17 +290,25 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
             </div>
           </div>
 
-          <button className="btn-gold" style={{ width: "100%", marginBottom: 8 }} onClick={applyFilters}>
+          <button
+            className="btn-gold"
+            style={{ width: "100%", marginBottom: 8 }}
+            onClick={applyFilters}
+          >
             Apply Filters
           </button>
-          <button className="clear-filters-btn" onClick={clearFilters}>✕ Clear Filters</button>
+          <button className="clear-filters-btn" onClick={clearFilters}>
+            ✕ Clear Filters
+          </button>
         </aside>
 
         {/* ── Product Grid ─────────────────────────────────────────────────── */}
         <div className="shop-main">
           <h2>{filters.category || "All Products"}</h2>
           <div className="shop-count">
-            {loading && products.length === 0 ? "Loading…" : `${total} product${total !== 1 ? "s" : ""} found`}
+            {loading && products.length === 0
+              ? "Loading…"
+              : `${total} product${total !== 1 ? "s" : ""} found`}
           </div>
 
           {/* Initial skeleton */}
@@ -262,7 +332,14 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
                   ))}
                 </div>
               ) : !loading ? (
-                <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
+                <div
+                  style={{
+                    gridColumn: "1/-1",
+                    textAlign: "center",
+                    padding: "60px",
+                    color: "var(--text-muted)",
+                  }}
+                >
                   <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
                   <p>No products found matching your filters.</p>
                 </div>
@@ -273,14 +350,25 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
 
               {/* Loading more indicator */}
               {loading && products.length > 0 && (
-                <div style={{ textAlign: "center", padding: "24px 0", color: "var(--text-muted)" }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "24px 0",
+                    color: "var(--text-muted)",
+                  }}
+                >
                   <div style={{ display: "inline-flex", gap: 6 }}>
                     {[0, 1, 2].map((i) => (
-                      <div key={i} style={{
-                        width: 8, height: 8, borderRadius: "50%",
-                        background: "var(--gold)",
-                        animation: `bounce 1s ${i * 0.2}s infinite`,
-                      }} />
+                      <div
+                        key={i}
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: "var(--gold)",
+                          animation: `bounce 1s ${i * 0.2}s infinite`,
+                        }}
+                      />
                     ))}
                   </div>
                 </div>
@@ -288,7 +376,14 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
 
               {/* End message */}
               {!hasMore && products.length > 0 && (
-                <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "20px 0",
+                    color: "var(--text-muted)",
+                    fontSize: 13,
+                  }}
+                >
                   ✅ All {products.length} products loaded
                 </div>
               )}

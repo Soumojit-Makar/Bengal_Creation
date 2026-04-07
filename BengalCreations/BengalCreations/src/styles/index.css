@@ -432,7 +432,8 @@ h5 {
   overflow: hidden;
   box-shadow: var(--shadow);
   transition: all 0.3s;
-  height: 250px;
+  width: 180px;
+  height: 220px;
   cursor: pointer;
 }
 .product-card:hover {
@@ -533,7 +534,8 @@ h5 {
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2
+  s;
   font-family: "DM Sans", sans-serif;
 }
 .add-cart-btn:hover,
@@ -545,16 +547,16 @@ h5 {
 .shop-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
-  gap: 24px;
-  max-width: 1300px;
+  max-width: 95%;
+  gap: 40px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 10px;
 }
 .sidebar {
   background: white;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 24px;
+  padding: 10px;
   height: fit-content;
   box-shadow: var(--shadow);
   position: sticky;
@@ -821,7 +823,8 @@ h5 {
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
   color: white;
   border: none;
-  padding: 14px 36px;
+  /* padding: 8px 20px; */
+  height: fit-content;
   border-radius: 6px;
   font-size: 15px;
   font-weight: 600;
