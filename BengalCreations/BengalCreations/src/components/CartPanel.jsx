@@ -27,7 +27,7 @@ function CartPanel({ cart, isOpen, onClose, removeFromCart, onCheckout }) {
             cart.map((item) => {
               const p = item.product;
               return (
-                <div onClick={navigate(`/product/${p._id}`)} className="cart-item" key={item._id}>
+                <div className="cart-item" onClick={()=> navigate(`/product/${p._id}`)} key={item._id}>
                   <div className="cart-item-img">
                     {p.images?.[0] ? (
                       <img src={p.images[0]} alt={p.name}/>

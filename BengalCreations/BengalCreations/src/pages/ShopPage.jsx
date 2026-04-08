@@ -196,9 +196,19 @@ const applyFiltersWith = (newFilters) => {
               type="text"
               placeholder="Name, category..."
               value={filters.search}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, search: e.target.value }))
-              }
+              onChange={(e) => {
+                const value=e.target.value
+
+                setFilters((f) => { 
+                  const updated={...f,search:value};
+                  // console.log(updated.category)
+                  applyFiltersWith(updated);
+                  return updated;
+                 });
+              }}
+              // onChange={(e) =>
+              //   setFilters((f) => ({ ...f, search: e.target.value }))
+              // }
               onKeyDown={(e) => e.key === "Enter" && applyFilters()}
             />
           </div>
@@ -259,18 +269,39 @@ const applyFiltersWith = (newFilters) => {
                 type="number"
                 placeholder="Min"
                 value={filters.priceMin}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, priceMin: e.target.value }))
-                }
+
+                onChange={(e) => {
+                const value=e.target.value
+
+                setFilters((f) => { 
+                  const updated={...f,priceMin:value};
+                  // console.log(updated.category)
+                  applyFiltersWith(updated);
+                  return updated;
+                 });
+              }}
+                // onChange={(e) =>
+                //   setFilters((f) => ({ ...f, priceMin: e.target.value }))
+                // }
               />
               <input
                 className="filter-input"
                 type="number"
                 placeholder="Max"
                 value={filters.priceMax}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, priceMax: e.target.value }))
-                }
+                onChange={(e) => {
+                const value=e.target.value
+
+                setFilters((f) => { 
+                  const updated={...f,priceMax:value};
+                  // console.log(updated.category)
+                  applyFiltersWith(updated);
+                  return updated;
+                 });
+              }}
+                // onChange={(e) =>
+                //   setFilters((f) => ({ ...f, priceMax: e.target.value }))
+                // }
               />
             </div>
           </div>

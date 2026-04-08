@@ -1,14 +1,14 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { cloudinaryResize } from "../utils/helpers";
 
-const CARD_WIDTH   = 180;  // px per card
-const CARD_GAP     = 14;
-const AUTO_MS      = 3500; // auto-advance interval
+const CARD_WIDTH = 136; // px per card
+const CARD_GAP = 6;
+const AUTO_MS = 3500; // auto-advance interval
 
 function SkeletonCard() {
   return (
-    <div className="carousel-card skeleton-card" style={{ flex: "0 0 180px" }}>
-      <div className="skeleton-img" style={{ height: 160 }} />
+    <div className="carousel-card skeleton-card">
+      <div className="skeleton-img" />
       <div className="carousel-card-body">
         <div className="skeleton-line title" />
         <div className="skeleton-line price" />
@@ -18,37 +18,52 @@ function SkeletonCard() {
   );
 }
 
-function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 }) {
-  const [page,   setPage]   = useState(0);
+function Carousel({
+  title,
+  products,
+  onShowProduct,
+  loading,
+  visibleCount = 6,
+}) {
+  const [page, setPage] = useState(0);
   const [paused, setPaused] = useState(false);
   const trackOuterRef = useRef(null);
-  const startX        = useRef(0);
-  const timerRef      = useRef(null);
+  const startX = useRef(0);
+  const timerRef = useRef(null);
 
-  const safeProducts  = products || [];
-  const totalPages    = Math.max(1, Math.ceil(safeProducts.length / visibleCount));
-  const stepPx        = visibleCount * (CARD_WIDTH + CARD_GAP);
+  const safeProducts = products || [];
+  const totalPages = Math.max(1, Math.ceil(safeProducts.length / visibleCount));
+  const stepPx = visibleCount * (CARD_WIDTH + CARD_GAP);
 
   // Scroll the outer container to the correct position
-  const scrollToPage = useCallback((p) => {
-    const el = trackOuterRef.current;
-    if (!el) return;
-    el.scrollTo({ left: p * stepPx, behavior: "smooth" });
-  }, [stepPx]);
+  const scrollToPage = useCallback(
+    (p) => {
+      const el = trackOuterRef.current;
+      if (!el) return;
+      el.scrollTo({ left: p * stepPx, behavior: "smooth" });
+    },
+    [stepPx],
+  );
 
-  const goTo = useCallback((p) => {
-    const clamped = ((p % totalPages) + totalPages) % totalPages;
-    setPage(clamped);
-    scrollToPage(clamped);
-  }, [totalPages, scrollToPage]);
+  const goTo = useCallback(
+    (p) => {
+      const clamped = ((p % totalPages) + totalPages) % totalPages;
+      setPage(clamped);
+      scrollToPage(clamped);
+    },
+    [totalPages, scrollToPage],
+  );
 
-  const move = useCallback((dir) => {
-    setPage((prev) => {
-      const next = ((prev + dir + totalPages) % totalPages);
-      scrollToPage(next);
-      return next;
-    });
-  }, [totalPages, scrollToPage]);
+  const move = useCallback(
+    (dir) => {
+      setPage((prev) => {
+        const next = (prev + dir + totalPages) % totalPages;
+        scrollToPage(next);
+        return next;
+      });
+    },
+    [totalPages, scrollToPage],
+  );
 
   // Reset on product change
   useEffect(() => {
@@ -73,10 +88,12 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
     setPage(Math.min(p, totalPages - 1));
   }, [stepPx, totalPages]);
 
-  const handleTouchStart = (e) => { startX.current = e.touches[0].clientX; };
-  const handleTouchEnd   = (e) => {
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e) => {
     const diff = startX.current - e.changedTouches[0].clientX;
-    if (diff > 50)  move(1);
+    if (diff > 50) move(1);
     if (diff < -50) move(-1);
   };
 
@@ -106,19 +123,18 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
           onScroll={handleScroll}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          style={{ overflowX: "hidden", scrollBehavior: "smooth" }}
         >
-          <div
-            className="carousel-track"
-            style={{ gap: `${CARD_GAP}px` }}
-          >
+          <div className="carousel-track" style={{ gap: `${CARD_GAP}px` }}>
             {loading
-              ? Array.from({ length: visibleCount }).map((_, i) => <SkeletonCard key={i} />)
+              ? Array.from({ length: visibleCount }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
               : safeProducts.map((p) => {
                   const rawImg = p?.images?.[0]?.url || p?.thumb;
-                  const disc   = p.original > p.price
-                    ? Math.round((1 - p.price / p.original) * 100)
-                    : 0;
+                  const disc =
+                    p.original > p.price
+                      ? Math.round((1 - p.price / p.original) * 100)
+                      : 0;
 
                   return (
                     <div
@@ -127,60 +143,113 @@ function Carousel({ title, products, onShowProduct, loading, visibleCount = 6 })
                       style={{ flex: `0 0 ${CARD_WIDTH}px` }}
                       onClick={() => onShowProduct(p.id)}
                     >
-                      <div className="carousel-card-img" style={{ height: 160 }}>
+                      <div
+                        className="carousel-card-img"
+                        style={{ height: 160 }}
+                      >
                         {rawImg ? (
                           <img
-                            src={rawImg.includes("cloudinary") ? cloudinaryResize(rawImg, 360) : rawImg}
+                            src={
+                              rawImg.includes("cloudinary")
+                                ? cloudinaryResize(rawImg, 360)
+                                : rawImg
+                            }
                             alt={p.name}
                             loading="lazy"
-                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              display: "block",
+                            }}
                             onError={(e) => {
                               e.target.style.display = "none";
                               e.target.nextSibling.style.display = "flex";
                             }}
                           />
                         ) : null}
-                        <div style={{
-                          display: rawImg ? "none" : "flex",
-                          height: "100%", width: "100%",
-                          alignItems: "center", justifyContent: "center",
-                          fontSize: 52, background: "var(--cream2)",
-                        }}>
+                        <div
+                          style={{
+                            display: rawImg ? "none" : "flex",
+                            height: "100%",
+                            width: "100%",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 52,
+                            background: "var(--cream2)",
+                          }}
+                        >
                           {p.emoji}
                         </div>
-                        {disc > 0 && <div className="product-badge">{disc}% OFF</div>}
+                        {disc > 0 && (
+                          <div className="product-badge">{disc}% OFF</div>
+                        )}
                       </div>
 
-                      <div className="carousel-card-body" style={{ padding: "10px 12px" }}>
-                        <div style={{
-                          fontFamily: "'Playfair Display',serif",
-                          fontSize: 12, color: "var(--maroon)", fontWeight: 700,
-                          lineHeight: 1.3, marginBottom: 4,
-                          display: "-webkit-box", WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical", overflow: "hidden",
-                        }}>
+                      <div
+                        className="carousel-card-body"
+                        style={{ padding: "10px 12px" }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: "'Playfair Display',serif",
+                            fontSize: 12,
+                            color: "var(--maroon)",
+                            fontWeight: 700,
+                            lineHeight: 1.3,
+                            marginBottom: 4,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
                           {p.name}
                         </div>
-                        <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--green)" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "baseline",
+                            gap: 4,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: "var(--green)",
+                            }}
+                          >
                             ₹{p.price?.toLocaleString()}
                           </span>
                           {p.original > p.price && (
-                            <span style={{ fontSize: 10, color: "var(--text-muted)", textDecoration: "line-through" }}>
+                            <span
+                              style={{
+                                fontSize: 10,
+                                color: "var(--text-muted)",
+                                textDecoration: "line-through",
+                              }}
+                            >
                               ₹{p.original?.toLocaleString()}
                             </span>
                           )}
                         </div>
                         {p.rating > 0 && (
-                          <div style={{ fontSize: 10, color: "var(--gold)", marginTop: 2 }}>
-                            {"★".repeat(Math.min(5, Math.floor(p.rating)))} {p.rating}
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: "var(--gold)",
+                              marginTop: 2,
+                            }}
+                          >
+                            {"★".repeat(Math.min(5, Math.floor(p.rating)))}{" "}
+                            {p.rating}
                           </div>
                         )}
                       </div>
                     </div>
                   );
-                })
-            }
+                })}
           </div>
         </div>
 

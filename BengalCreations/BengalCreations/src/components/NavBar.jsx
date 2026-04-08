@@ -169,12 +169,13 @@ function Navbar({
           />
           <button onClick={handleSearch}>🔍 Search</button>
         </div>
-        <div className="nav-btn cartbtn" onClick={openCart}>
-          <ShoppingCart color="#D4AF37" size={22} />
-           <p>{cartCount}</p>
-           <button >
+
+        <div className="nav-btn cartbtn" onClick={openCart} >
+          <ShoppingCart color="#D4AF37" size={30} />
+          <sup>{cartCount > 0 && <p style={{}}>{cartCount}</p>}</sup>
+           {/* <button>
               <span className="cart-badge">Cart</span>
-            </button>
+            </button> */}
         </div>
       </div>
 

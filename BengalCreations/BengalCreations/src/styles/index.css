@@ -40,6 +40,7 @@ h5 {
 }
 
 /* NAVBAR */
+
 .navbar {
   background: linear-gradient(
     135deg,
@@ -132,11 +133,10 @@ h5 {
   white-space: nowrap;
 }
 .cartbtn{
-
   width: fit-content;
-  margin: 10px;
+  margin: 5px;
   display: flex;
-  gap: 5px;
+  
 }
 .cartbtn img{
   width: 25px;
@@ -149,11 +149,11 @@ h5 {
   color: var(--gold-pale);
 }
 .cartbtn p{
-  padding: 2px;
-  width: 20px;
-  height: 20px;
+  padding: 1px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
-  background-color: red;
+  background-color: rgb(233, 59, 59);
   color: var(--gold-pale);
   text-align: center;
 }
@@ -349,8 +349,10 @@ h5 {
 .carousel-track {
   display: flex;
   gap: 20px;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.6s ease-in-out;
+  /* transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); */
 }
+
 .carousel-nav {
   position: absolute;
   top: 50%;
@@ -2126,4 +2128,167 @@ footer {
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }
   30% { transform: translateY(-8px); }
+}
+/* //Pop up  */
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+}
+
+.popup-box {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+  position: relative;
+
+  animation: popupFade 0.3s ease;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.shop-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border: none;
+  background: #e9451a;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@keyframes popupFade {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+
+/* .promo-bar {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.promo-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll linear infinite;
+}
+
+.promo-item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 40px;
+}
+
+.badge {
+  margin-right: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.sep {
+  margin: 0 20px;
+}
+
+/* 🔥 MAIN ANIMATION */
+/* @keyframes scroll {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+} */ */
+
+
+
+
+/* .promo-bar {
+  overflow-y: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.promo-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: scroll linear infinite;
+  will-change: transform;
+}
+
+.promo-item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 40px;
+}
+
+/* 🔥 FIXED ANIMATION 
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);   /* start from right (hidden) 
+  }
+  100% {
+    transform: translateX(-100%);  /* move fully to left 
+  }
+} */
+
+.promo-bar {
+  overflow: hidden;
+  white-space: nowrap;
+
+}
+
+.promo-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: scroll linear infinite;
+}
+
+.promo-item {
+  display: inline-flex;
+  align-items: center;
+  padding-right: 40px;
+}
+
+.sep {
+  margin: 0 20px;
+}
+
+/* 🔥 MAGIC HERE */
+@keyframes scroll {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
