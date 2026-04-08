@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useCallback, useState, useEffect } from "react";
 import Carousel from "../components/Carousel";
+import PopupBanner from "../components/PopupBanner";
 import { fetchProductsPageByCategory } from "../api/api";
 
-// Map of category name → [state, setter]
+// Categories
 const CATEGORY_CAROUSELS = [
   "Handloom Sarees",
   "Dokra Art",
@@ -25,11 +26,12 @@ function HomePage({
 }) {
   const navigate = useNavigate();
 
-  // Each category gets its own independent state so carousels render as soon as their data arrives
+  // State for category products
   const [categoryProducts, setCategoryProducts] = useState(() =>
     Object.fromEntries(CATEGORY_CAROUSELS.map((cat) => [cat, null]))
   );
 
+  // Navigate to shop with category
   const goToShop = useCallback(
     (category) => {
       setFilterCategory(category);
@@ -38,24 +40,35 @@ function HomePage({
     [setFilterCategory, navigate]
   );
 
-  // Fetch each category independently — no more all-or-nothing barrier
+  // Fetch category products
   useEffect(() => {
     CATEGORY_CAROUSELS.forEach((cat) => {
       fetchProductsPageByCategory({ category: cat, limit: 20 })
         .then((data) => {
-          setCategoryProducts((prev) => ({ ...prev, [cat]: data.products }));
+          setCategoryProducts((prev) => ({
+            ...prev,
+            [cat]: data.products,
+          }));
         })
         .catch((err) => {
           console.error(`Error fetching ${cat}:`, err);
-          // Set to empty array so carousel is simply hidden, not stuck pending
-          setCategoryProducts((prev) => ({ ...prev, [cat]: [] }));
+          setCategoryProducts((prev) => ({
+            ...prev,
+            [cat]: [],
+          }));
         });
     });
   }, []);
 
   return (
     <div>
-      {/* Gallery Tiles */}
+      {/* ✅ POPUP BANNER */}
+      <PopupBanner
+        delay={2000}
+        onClick={() => navigate("/shop")}
+      />
+
+      {/* ✅ Gallery Tiles */}
       <div className="section alpona-bg">
         <div className="gallery">
           {categoryTiles.map((tile) => (
@@ -73,7 +86,7 @@ function HomePage({
         </div>
       </div>
 
-      {/* Trending Products */}
+      {/* ✅ Trending Products */}
       <Carousel
         title="Trending Products"
         products={allProducts}
@@ -82,7 +95,7 @@ function HomePage({
         visibleCount={10}
       />
 
-      {/* Best Sellers */}
+      {/* ✅ Best Sellers */}
       <Carousel
         title="Best Sellers"
         products={[...allProducts].reverse()}
@@ -91,12 +104,10 @@ function HomePage({
         visibleCount={10}
       />
 
-      {/* Per-Category Carousels — render each independently as data arrives */}
+      {/* ✅ Category Carousels */}
       {CATEGORY_CAROUSELS.map((cat) => {
         const prods = categoryProducts[cat];
-        // null  → still loading → show skeleton
-        // []    → loaded but empty → skip
-        // [...] → show carousel
+
         if (prods !== null && prods.length === 0) return null;
 
         return (
