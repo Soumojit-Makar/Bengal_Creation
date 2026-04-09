@@ -48,7 +48,7 @@ const getAllProducts = async (req, res) => {
 
     let query = {};
     if (search) {
-      query["$or"] = [
+      query["$and"] = [
         { name:     { $regex: search, $options: "i" } },
         { district: { $regex: search, $options: "i" } },
       ];
@@ -57,14 +57,14 @@ const getAllProducts = async (req, res) => {
     if (category) {
       const cat = await Category.findOne({ name: category });
       if (cat) {
-        query["$or"] = query["$or"] || [];
-        query["$or"].push({ category: cat._id });
+        query["$and"] = query["$and"] || [];
+        query["$and"].push({ category: cat._id });
       } else {
         console.log(`Category "${category}" not found, ignoring category filter`);
       }
     }
     console.log("Final query:", query);
-
+    
     const skip  = (page - 1) * limit;
     const total = await Product.countDocuments(query);
 

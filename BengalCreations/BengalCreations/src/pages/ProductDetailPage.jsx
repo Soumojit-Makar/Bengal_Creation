@@ -81,7 +81,7 @@ function ProductDetailPage({
   }, [p]);
 
   // ✅ THEN condition
-   if (loading) {
+  if (loading) {
     const shimmer = {
       position: "relative",
       overflow: "hidden",
@@ -228,7 +228,25 @@ function ProductDetailPage({
           </div>
         </div>
 
+        {/* hover Imgae */}
+
+        {/* <div
+          className="pd-hover-img"
+          onMouseMove={(e) => {
+            const { left, top, width, height } =
+              e.currentTarget.getBoundingClientRect();
+            const x = ((e.clientX - left) / width) * 100;
+            const y = ((e.clientY - top) / height) * 100;
+
+            e.currentTarget.querySelector("img").style.transformOrigin =
+              `${x}% ${y}%`;
+          }}
+        >
+          <img src={imgs[imgIdx]?.url} alt={imgs[imgIdx]?.label} />
+        </div> */}
+
         {/* Info */}
+
         <div className="pd-info">
           <div className="pd-cat-label">{p.category}</div>
           <h1 className="pd-title">{p.name}</h1>

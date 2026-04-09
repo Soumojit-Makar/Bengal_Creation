@@ -260,7 +260,6 @@ const applyFiltersWith = (newFilters) => {
               ))}
             </select>
           </div>
-
           <div className="filter-section">
             <label>Price Range (₹)</label>
             <div className="price-range">
