@@ -33,13 +33,11 @@ const createProduct = async (req, res) => {
       $push: { products: product._id },
     });
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Product created successfully",
-        product,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product,
+    });
   } catch (err) {
     console.error("Product creation error:", err);
     res.status(500).json({ success: false, error: err.message });
@@ -63,25 +61,54 @@ const getAllProducts = async (req, res) => {
     //     { district: { $regex: search, $options: "i" } },
     //   ];
     // }
+    // let query = {};
+
+    // if (search) {
+    //   // First find matching category
+    //   const categoryDoc = await Category.findOne({
+    //     name: { $regex: search, $options: "i" },
+    //   });
+
+    //   query["$or"] = [
+    //     { name: { $regex: search, $options: "i" } },
+    //     { district: { $regex: search, $options: "i" } },
+    //   ];
+
+    //   // If category found, include it
+    //   if (categoryDoc) {
+    //     query["$or"].push({ category: categoryDoc._id });
+    //   }
+    // }
+
     let query = {};
 
+    // Step 1: Search logic
     if (search) {
-      // First find matching category
       const categoryDoc = await Category.findOne({
         name: { $regex: search, $options: "i" },
       });
 
-      query["$or"] = [
+      const searchConditions = [
         { name: { $regex: search, $options: "i" } },
         { district: { $regex: search, $options: "i" } },
       ];
 
-      // If category found, include it
       if (categoryDoc) {
-        query["$or"].push({ category: categoryDoc._id });
+        searchConditions.push({ category: categoryDoc._id });
+      }
+
+      query.$or = searchConditions;
+    }
+
+    // Step 2: Category filter (from dropdown / params)
+    if (category) {
+      const cat = await Category.findOne({ name: category });
+
+      if (cat) {
+        query.category = cat._id;
       }
     }
-    console.log("Base query:", query);
+    // console.log("Base query:", query);
     if (category) {
       const cat = await Category.findOne({ name: category });
       if (cat) {
