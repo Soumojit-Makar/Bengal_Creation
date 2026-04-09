@@ -2,7 +2,7 @@ const Product = require("../models/product");
 const Vendor = require("../models/vendor");
 const Category = require("../models/category");
 const mongoose = require("mongoose");
-require('dotenv').config();
+require("dotenv").config();
 const createProduct = async (req, res) => {
   try {
     console.log("Request body:", req.body);
@@ -12,7 +12,9 @@ const createProduct = async (req, res) => {
 
     const price = parseFloat(req.body.price);
     const stock = parseInt(req.body.stock);
-    const originalPrice = req.body.originalPrice ? parseFloat(req.body.originalPrice) : null;
+    const originalPrice = req.body.originalPrice
+      ? parseFloat(req.body.originalPrice)
+      : null;
 
     const product = new Product({
       name: req.body.name,
@@ -27,9 +29,17 @@ const createProduct = async (req, res) => {
     });
 
     await product.save();
-    await Vendor.findByIdAndUpdate(req.body.vendor, { $push: { products: product._id } });
+    await Vendor.findByIdAndUpdate(req.body.vendor, {
+      $push: { products: product._id },
+    });
 
-    res.status(201).json({ success: true, message: "Product created successfully", product });
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Product created successfully",
+        product,
+      });
   } catch (err) {
     console.error("Product creation error:", err);
     res.status(500).json({ success: false, error: err.message });
@@ -38,20 +48,38 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const page     = parseInt(req.query.page)  || 1;
-    const limit    = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const category = req.query.category || "";
-    const search   = req.query.search   || "";
+    const search = req.query.search || "";
     console.log("Query params:", { page, limit, category, search });
     const filter = {};
     if (category) filter["$or"] = []; // handled below
 
+    // let query = {};
+    // if (search) {
+    //   query["$and"] = [
+    //     { name:     { $regex: search, $options: "i" } },
+    //     { district: { $regex: search, $options: "i" } },
+    //   ];
+    // }
     let query = {};
+
     if (search) {
-      query["$and"] = [
-        { name:     { $regex: search, $options: "i" } },
+      // First find matching category
+      const categoryDoc = await Category.findOne({
+        name: { $regex: search, $options: "i" },
+      });
+
+      query["$or"] = [
+        { name: { $regex: search, $options: "i" } },
         { district: { $regex: search, $options: "i" } },
       ];
+
+      // If category found, include it
+      if (categoryDoc) {
+        query["$or"].push({ category: categoryDoc._id });
+      }
     }
     console.log("Base query:", query);
     if (category) {
@@ -60,16 +88,18 @@ const getAllProducts = async (req, res) => {
         query["$and"] = query["$and"] || [];
         query["$and"].push({ category: cat._id });
       } else {
-        console.log(`Category "${category}" not found, ignoring category filter`);
+        console.log(
+          `Category "${category}" not found, ignoring category filter`,
+        );
       }
     }
     console.log("Final query:", query);
-    
-    const skip  = (page - 1) * limit;
+
+    const skip = (page - 1) * limit;
     const total = await Product.countDocuments(query);
 
     const products = await Product.find(query)
-      .populate("vendor",   "shopName")
+      .populate("vendor", "shopName")
       .populate("category", "name")
       .skip(skip)
       .limit(limit)
@@ -82,21 +112,24 @@ const getAllProducts = async (req, res) => {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
-        hasMore:    page * limit < total,
+        hasMore: page * limit < total,
       },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-const getProducs=async(req,res)=>{
-  try{
-    const products=await Product.find().populate("vendor","shopName").populate("category","name").sort({createdAt:-1})
-    res.json(products)
-  }catch(err){
+const getProducs = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate("vendor", "shopName")
+      .populate("category", "name")
+      .sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 const getProductById = async (req, res) => {
   const product = await Product.findById(req.params.id)
@@ -139,14 +172,14 @@ const getProductsByVendor = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-const getProductByCategory=async(req,res)=>{
-  try{
-     const { category } = req.params;
-    const products =await Product.find({category})
-  }catch(err){
+const getProductByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const products = await Product.find({ category });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 module.exports = {
   createProduct,
@@ -158,5 +191,5 @@ module.exports = {
   bulkUpdateStock,
   getProductsByVendor,
   getProductByCategory,
-  getProducs
+  getProducs,
 };
