@@ -167,6 +167,9 @@ function Navbar({
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
+          <datalist>
+            <data value=""></data>
+          </datalist>
           <button onClick={handleSearch}>🔍 Search</button>
         </div>
 

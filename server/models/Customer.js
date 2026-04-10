@@ -9,6 +9,7 @@ const customerSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: true },
     googleId: { type: String, default: null },
     picture: { type: String, default: null },
+    hasOrdered: { type: Boolean, default: false }
   },
   { timestamps: true },
 );

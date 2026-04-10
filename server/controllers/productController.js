@@ -44,6 +44,51 @@ const createProduct = async (req, res) => {
   }
 };
 
+// Search Suggation //
+
+const getSearchSuggestions = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) return res.json([]);
+
+    // Step 1: find matching category
+    const categoryDocs = await Category.find({
+      name: { $regex: q, $options: "i" },
+    }).select("_id name");
+
+    const categoryIds = categoryDocs.map((c) => c._id);
+
+    // Step 2: find matching products
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { district: { $regex: q, $options: "i" } },
+        { category: { $in: categoryIds } },
+      ],
+    })
+      .limit(8)
+      .select("name district");
+
+    // Step 3: format suggestions (important)
+    const suggestions = [
+      ...products.map((p) => ({
+        type: "product",
+        text: p.name,
+      })),
+      ...categoryDocs.map((c) => ({
+        type: "category",
+        text: c.name,
+      })),
+    ];
+
+    res.json(suggestions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// end search suggation //
 const getAllProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;

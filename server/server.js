@@ -17,6 +17,9 @@ const customerAuth = require("./routes/customerAuth");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
+const couponRoutes = require("./routes/couponRoutes");
+
+
 const { url } = require("inspector");
 
 const app = express();
@@ -66,6 +69,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/webhook", webhookRoutes);
 app.use("/api/contact", require("./routes/contactRoutes"));
 app.use("/api/chatbot", require("./routes/chatbotRoutes"));
+app.use("/api/coupon", couponRoutes);
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({

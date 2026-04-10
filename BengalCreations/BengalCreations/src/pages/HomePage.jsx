@@ -3,6 +3,7 @@ import { useCallback, useState, useEffect } from "react";
 import Carousel from "../components/Carousel";
 import PopupBanner from "../components/PopupBanner";
 import { fetchProductsPageByCategory } from "../api/api";
+import Banner from "./banner";
 
 // Categories
 const CATEGORY_CAROUSELS = [
@@ -62,6 +63,7 @@ function HomePage({
 
   return (
     <div>
+      <Banner/>
       {/* ✅ POPUP BANNER */}
       <PopupBanner
         delay={2000}
@@ -70,6 +72,7 @@ function HomePage({
 
       {/* ✅ Gallery Tiles */}
       <div className="section alpona-bg">
+        {/* <img className="tiffinHubBanner" src="https://res.cloudinary.com/dnplp91xz/image/upload/q_auto/f_auto/v1775738230/BannerOfSH_pwmgym.jpg" alt="" /> */}
         <div className="gallery">
           {categoryTiles.map((tile) => (
             <span

@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
+import { ChevronDown } from "lucide-react";
 import {
   fetchAllCategories,
   fetchProductsPage,
   fetchProductsPageByCategory,
 } from "../api/api";
 
+// const priceMax=newFilters.priceMin+1;
 const PAGE_SIZE = 10;
-
 function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +32,9 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   const [loading, setLoading] = useState(false);
   const [initLoaded, setInitLoaded] = useState(false);
   const [total, setTotal] = useState(0);
+  const [error, setError] = useState("");
+  const [hasError, setHasError] = useState(false);
+  const [bgc, setBgc] = useState("");
 
   const loaderRef = useRef(null);
 
@@ -69,9 +73,12 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
   }, []);
 
   // Reset + reload when filters change
+
   const resetAndLoad = useCallback(
     async (newFilters, rating) => {
       setLoading(true);
+      setProducts([]);
+      setHasError(false);
       setProducts([]);
       setPage(1);
       setHasMore(true);
@@ -85,6 +92,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
         setPage(2);
       } catch (err) {
         console.error(err);
+        setHasError(true);
       } finally {
         setLoading(false);
         setInitLoaded(true);
@@ -95,7 +103,7 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
 
   // Load next page (append)
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || hasError) return;
     setLoading(true);
     try {
       const res = await doFetch(page, filters);
@@ -108,10 +116,11 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
       setPage((p) => p + 1);
     } catch (err) {
       console.error(err);
+      setHasError(true);
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page, filters, ratingFilter, doFetch, clientFilter]);
+  }, [loading, hasMore, hasError, page, filters, ratingFilter, doFetch, clientFilter]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -123,16 +132,54 @@ function ShopPage({ cart, wishlist, onAddCart, onToggleWish, WB_DISTRICTS }) {
       { threshold: 0.1 },
     );
 
-    
     const el = loaderRef.current;
     if (el) observer.observe(el);
     return () => {
       if (el) observer.unobserve(el);
     };
   }, [initLoaded, hasMore, loading, loadMore]);
-const applyFiltersWith = (newFilters) => {
-  resetAndLoad(newFilters, ratingFilter);
-};
+
+  const applyFiltersWith = (newFilters) => {
+    // if (newFilters.priceMin == "" && newFilters.priceMax != "") {
+    //   setError("Please enter Min price");
+    //   return;
+    // }
+
+    // else if (newFilters.priceMax == "" && newFilters.priceMin != "") {
+    //   setError("Please enter Max price");
+    //   return;
+    // }
+    // else if (newFilters.priceMax < newFilters.priceMin) {
+    //   setError("Max price must be greater than Min price");
+    //   return; /////////////////////////////////////////////////////////////
+    // }
+    // else if(newFilters.priceMin < newFilters.priceMax){
+    //   setError("")
+    // }
+    // else{
+    //   setError("")
+    // }
+
+    const min = Number(newFilters.priceMin);
+    const max = Number(newFilters.priceMax);
+
+    // If one is empty → don't validate yet
+    if (!newFilters.priceMin || !newFilters.priceMax) {
+      setError("");
+      setBgc("none")
+      return;
+    }
+
+    if (max < min) {
+      setError("Max price must be greater than Min price");
+      setBgc("red");
+      return;
+    }
+
+    setError("");
+
+    resetAndLoad(newFilters, ratingFilter);
+  };
   // Initial load + reload on location change
   useEffect(() => {
     fetchAllCategories().then(setCatOptions).catch(console.error);
@@ -162,6 +209,7 @@ const applyFiltersWith = (newFilters) => {
     setRatingFilter(0);
     resetAndLoad(f, 0);
   }, [resetAndLoad]);
+
 
   // Skeleton grid
   const SkeletonGrid = () => (
@@ -219,14 +267,14 @@ const applyFiltersWith = (newFilters) => {
               className="filter-select"
               value={filters.category}
               onChange={(e) => {
-                const value=e.target.value
+                const value = e.target.value;
 
-                setFilters((f) => { 
-                  const updated={...f,category:value};
+                setFilters((f) => {
+                  const updated = { ...f, category: value };
                   // console.log(updated.category)
                   applyFiltersWith(updated);
                   return updated;
-                 });
+                });
               }}
             >
               <option value="">All Categories</option>
@@ -244,14 +292,14 @@ const applyFiltersWith = (newFilters) => {
               className="filter-select"
               value={filters.district}
               onChange={(e) => {
-                const value=e.target.value
+                const value = e.target.value;
 
-                setFilters((f) => { 
-                  const updated={...f,district:value};
+                setFilters((f) => {
+                  const updated = { ...f, district: value };
                   // console.log(updated.category)
                   applyFiltersWith(updated);
                   return updated;
-                 });
+                });
               }}
             >
               <option value="">All Districts</option>
@@ -261,24 +309,26 @@ const applyFiltersWith = (newFilters) => {
             </select>
           </div>
           <div className="filter-section">
+            
+
             <label>Price Range (₹)</label>
+
             <div className="price-range">
               <input
                 className="filter-input"
                 type="number"
                 placeholder="Min"
                 value={filters.priceMin}
-
                 onChange={(e) => {
-                const value=e.target.value
+                  const value = e.target.value;
 
-                setFilters((f) => { 
-                  const updated={...f,priceMin:value};
-                  // console.log(updated.category)
-                  applyFiltersWith(updated);
-                  return updated;
-                 });
-              }}
+                  setFilters((f) => {
+                    const updated = { ...f, priceMin: value };
+                    // console.log(updated.category)
+                    applyFiltersWith(updated);
+                    return updated;
+                  });
+                }}
                 // onChange={(e) =>
                 //   setFilters((f) => ({ ...f, priceMin: e.target.value }))
                 // }
@@ -288,21 +338,29 @@ const applyFiltersWith = (newFilters) => {
                 type="number"
                 placeholder="Max"
                 value={filters.priceMax}
+                style={{backgroundColor: `{bgc}`}}
                 onChange={(e) => {
-                const value=e.target.value
+                  const value = e.target.value;
 
-                setFilters((f) => { 
-                  const updated={...f,priceMax:value};
-                  // console.log(updated.category)
-                  applyFiltersWith(updated);
-                  return updated;
-                 });
-              }}
+                  setFilters((f) => {
+                    const updated = { ...f, priceMax: value };
+                    // console.log(updated.category)
+                    applyFiltersWith(updated);
+                    return updated;
+                  });
+                }}
                 // onChange={(e) =>
                 //   setFilters((f) => ({ ...f, priceMax: e.target.value }))
                 // }
               />
             </div>
+            {/* 🔥 ERROR MESSAGE ON TOP */}
+
+            {error && (
+              <p style={{color: "red", marginBottom: "8px", fontSize: "14px", letterSpacing: "-1px" }}>
+                {error}
+              </p>
+            )}
           </div>
 
           <div className="filter-section">
@@ -338,7 +396,7 @@ const applyFiltersWith = (newFilters) => {
           <div className="shop-count">
             {loading && products.length === 0
               ? "Loading…"
-              : `${total} product${total !== 1 ? "s" : ""} found`}
+              : `${products.length} product${total !== 1 ? "s" : ""} Loaded`}
           </div>
 
           {/* Initial skeleton */}
@@ -405,7 +463,7 @@ const applyFiltersWith = (newFilters) => {
               )}
 
               {/* End message */}
-              {!hasMore && products.length > 0 && (
+              {/* {!hasMore && products.length > 0 && (
                 <div
                   style={{
                     textAlign: "center",
@@ -416,7 +474,7 @@ const applyFiltersWith = (newFilters) => {
                 >
                   ✅ All {products.length} products loaded
                 </div>
-              )}
+              )} */}
             </>
           )}
         </div>
