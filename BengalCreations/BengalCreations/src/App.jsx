@@ -182,7 +182,6 @@ export default function App() {
         <Route path="/vendor" element={
           <VendorPage onShowToast={showToast} catOptions={catOptions} WB_DISTRICTS={WB_DISTRICTS} />
         } />
-
         {/* Customer-only */}
         <Route path="/wishlist" element={
           <ProtectedRoute role="customer">

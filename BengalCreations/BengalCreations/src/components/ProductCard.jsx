@@ -38,7 +38,7 @@ const getShortName = (name) => {
       </div>
       <div className="product-body">
         <div className="product-name">
-          {console.log(p.name.split(/\s+/).length)}
+          {/* {console.log(p.name.split(/\s+/).length)} */}
         {getShortName(p.name)}
         </div>
         <div style={{ display: "flex", alignItems: "baseline" }}>

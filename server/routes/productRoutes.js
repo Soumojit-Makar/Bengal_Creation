@@ -97,5 +97,7 @@ router.delete("/:id", deleteProduct);
   #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
   #swagger.responses[200] = { description: 'Product deleted', schema: { msg: 'Product deleted' } }
 */
+// Serach Suggations Route // 
+router.get("/search/suggestions", getSearchSuggestions);
 
 module.exports = router;

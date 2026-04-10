@@ -110,7 +110,7 @@ function Carousel({
       >
         <button
           className="carousel-nav prev"
-          onClick={() => move(-1)}
+          onClick={() => move(1)}
           aria-label="Previous"
         >
           ‹
@@ -255,7 +255,7 @@ function Carousel({
 
         <button
           className="carousel-nav next"
-          onClick={() => move(1)}
+          onClick={() => move(-1)}
           aria-label="Next"
         >
           ›
