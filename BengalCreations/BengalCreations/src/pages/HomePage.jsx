@@ -3,7 +3,7 @@ import { useCallback, useState, useEffect } from "react";
 import Carousel from "../components/Carousel";
 import PopupBanner from "../components/PopupBanner";
 import { fetchProductsPageByCategory } from "../api/api";
-import Banner from "./banner"; 
+import Banner from "./Banner"; 
 
 // Categories
 const CATEGORY_CAROUSELS = [
