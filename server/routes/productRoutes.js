@@ -11,6 +11,7 @@ const {
   getProductsByVendor,
   getProductByCategory,
   getProducs,
+  getSearchSuggestions,
 } = require("../controllers/productController");
 
 router.post("/", createProduct);
