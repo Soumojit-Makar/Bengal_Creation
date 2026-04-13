@@ -7,6 +7,6 @@ const customerAuth = require("../middleware/customerAuth");
 router.get("/public", getPublicCoupons);
 
 // Apply coupon at checkout (authenticated customer)
-router.post("/apply", customerAuth, applyCoupon);
+router.post("/apply",  applyCoupon);
 
 module.exports = router;
