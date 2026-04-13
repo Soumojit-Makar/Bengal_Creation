@@ -398,3 +398,211 @@ export const failPayment = async (orderId) => {
   if (!res.ok) throw new Error(data.msg || "Failed to mark payment as failed");
   return data;
 };
+
+// ─── Coupons ──────────────────────────────────────────────────────────────────
+export const fetchPublicCoupons = async () => {
+  const res = await fetch(`${API}/coupon/public`);
+  if (!res.ok) throw new Error("Failed to fetch coupons");
+  return res.json();
+};
+
+export const applyCoupon = async ({ code, cartTotal, customerId, token }) => {
+  const res = await fetch(`${API}/coupon/apply`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ code, cartTotal, customerId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Invalid coupon");
+  return data;
+};
+
+// ─── Super Admin ──────────────────────────────────────────────────────────────
+const SA = (path) => `${API}/super-admin${path}`;
+const saHeaders = (token) => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`,
+});
+
+export const saSendOtp = async (email) => {
+  const res = await fetch(SA("/auth/send-otp"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to send OTP");
+  return data;
+};
+
+export const saVerifyOtp = async (email, otp) => {
+  const res = await fetch(SA("/auth/verify-otp"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Invalid OTP");
+  return data;
+};
+
+export const saGetDashboard = async (token) => {
+  const res = await fetch(SA("/dashboard"), { headers: saHeaders(token) });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed");
+  return data;
+};
+
+export const saGetVendors = async (token, params = {}) => {
+  const q = new URLSearchParams(params);
+  const res = await fetch(SA(`/vendors?${q}`), { headers: saHeaders(token) });
+  return res.json();
+};
+
+export const saApproveVendor = async (token, id) => {
+  const res = await fetch(SA(`/vendors/${id}/approve`), {
+    method: "PATCH",
+    headers: saHeaders(token),
+  });
+  return res.json();
+};
+
+export const saRejectVendor = async (token, id) => {
+  const res = await fetch(SA(`/vendors/${id}/reject`), {
+    method: "DELETE",
+    headers: saHeaders(token),
+  });
+  return res.json();
+};
+
+export const saGetCustomers = async (token, params = {}) => {
+  const q = new URLSearchParams(params);
+  const res = await fetch(SA(`/customers?${q}`), { headers: saHeaders(token) });
+  return res.json();
+};
+
+export const saDeleteCustomer = async (token, id) => {
+  const res = await fetch(SA(`/customers/${id}`), {
+    method: "DELETE",
+    headers: saHeaders(token),
+  });
+  return res.json();
+};
+
+export const saGetOrders = async (token, params = {}) => {
+  const q = new URLSearchParams(params);
+  const res = await fetch(SA(`/orders?${q}`), { headers: saHeaders(token) });
+  return res.json();
+};
+
+export const saUpdateOrder = async (token, id, body) => {
+  const res = await fetch(SA(`/orders/${id}`), {
+    method: "PATCH",
+    headers: saHeaders(token),
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+export const saBulkUpdateOrders = async (token, body) => {
+  const res = await fetch(SA("/orders/bulk-update"), {
+    method: "POST",
+    headers: saHeaders(token),
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+export const saManualCharge = async (token, body) => {
+  const res = await fetch(SA("/orders/manual-charge"), {
+    method: "POST",
+    headers: saHeaders(token),
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+export const saGetRefunds = async (token) => {
+  const res = await fetch(SA("/refunds"), { headers: saHeaders(token) });
+  return res.json();
+};
+
+export const saProcessRefund = async (token, body) => {
+  const res = await fetch(SA("/refunds/process"), {
+    method: "POST",
+    headers: saHeaders(token),
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+export const saGetCoupons = async (token) => {
+  const res = await fetch(SA("/coupons"), { headers: saHeaders(token) });
+  return res.json();
+};
+
+export const saCreateCoupon = async (token, body) => {
+  const res = await fetch(SA("/coupons"), {
+    method: "POST",
+    headers: saHeaders(token),
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+export const saUpdateCoupon = async (token, id, body) => {
+  const res = await fetch(SA(`/coupons/${id}`), {
+    method: "PATCH",
+    headers: saHeaders(token),
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+export const saDeleteCoupon = async (token, id) => {
+  const res = await fetch(SA(`/coupons/${id}`), {
+    method: "DELETE",
+    headers: saHeaders(token),
+  });
+  return res.json();
+};
+
+export const saGetRevenue = async (token, params = {}) => {
+  const q = new URLSearchParams(params);
+  const res = await fetch(SA(`/revenue?${q}`), { headers: saHeaders(token) });
+  return res.json();
+};
+
+// ─── Platform Settings (public read) ─────────────────────────────────────────
+export const fetchPlatformSettings = async () => {
+  const res = await fetch(`${API.replace("/api", "")}/api/settings`);
+  if (!res.ok) return { gstRate: 5, gstEnabled: true, platformFeeRate: 0, platformFeeEnabled: false, platformFeeLabel: "Platform Fee", deliveryCharge: 0, deliveryChargeEnabled: false, freeDeliveryAbove: 0 };
+  return res.json();
+};
+
+export const fetchChargePreview = async ({ subtotal, discountAmount = 0 }) => {
+  const params = new URLSearchParams({ subtotal, discountAmount });
+  const res = await fetch(`${API}/orders/charge-preview?${params}`);
+  if (!res.ok) throw new Error("Failed to fetch charge preview");
+  return res.json();
+};
+
+// ─── Super Admin — Platform Settings ─────────────────────────────────────────
+export const saGetSettings = async (token) => {
+  const res = await fetch(`${API}/super-admin/settings`, {
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+};
+
+export const saUpdateSettings = async (token, body) => {
+  const res = await fetch(`${API}/super-admin/settings`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};

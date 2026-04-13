@@ -35,6 +35,7 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { WB_DISTRICTS, CATEGORY_TILES, EMOJI_OPTIONS } from "./constants/data";
 import { fetchAllProducts, fetchAllCategories } from "./api/api";
 import Footer from "./components/Footer";
+import SuperAdminPage from "./pages/SuperAdminPage";
 import DeliveryPolicy from "./pages/DeliveryPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
@@ -120,10 +121,11 @@ export default function App() {
 
   const isLoginPage = location.pathname === "/login";
   const isResetPage = location.pathname.startsWith("/reset-password");
+  const isSuperAdmin = location.pathname.startsWith("/super-admin");
 
   return (
     <div className="bc-app">
-      {!isLoginPage && !isResetPage && (
+      {!isLoginPage && !isResetPage && !isSuperAdmin && (
         <Navbar
           cart={cart}
           wishlist={wishlist}
@@ -219,13 +221,14 @@ export default function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/super-admin" element={<SuperAdminPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      <Footer navigate={navigate} />
+      {!isLoginPage && !isResetPage && !isSuperAdmin && <Footer navigate={navigate} />}
 
       {/* Chatbot - only shown to non-vendor users */}
-      {currentUser?.role !== "vendor" && <Chatbot />}
+      {currentUser?.role !== "vendor" && !isSuperAdmin && <Chatbot />}
     </div>
   );
 }

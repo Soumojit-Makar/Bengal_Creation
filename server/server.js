@@ -69,6 +69,16 @@ app.use("/api/chatbot",    require("./routes/chatbotRoutes"));
 app.use("/api/coupon",     couponRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 
+// Public platform settings (for frontend checkout to read charges)
+app.get("/api/settings", async (req, res) => {
+  try {
+    const PlatformSettings = require("./models/PlatformSettings");
+    let s = await PlatformSettings.findOne({ key: "global" });
+    if (!s) s = await PlatformSettings.create({ key: "global" });
+    res.json({ gstRate: s.gstRate, gstEnabled: s.gstEnabled, platformFeeRate: s.platformFeeRate, platformFeeEnabled: s.platformFeeEnabled, platformFeeLabel: s.platformFeeLabel, deliveryCharge: s.deliveryCharge, deliveryChargeEnabled: s.deliveryChargeEnabled, freeDeliveryAbove: s.freeDeliveryAbove });
+  } catch (err) { res.status(500).json({ msg: err.message }); }
+});
+
 // ── Custom API Docs (no Swagger) ──────────────────────────────────────────────
 app.get("/api-docs", (req, res) => {
   const html = buildApiDocsHtml(

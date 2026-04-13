@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { uploadImage } from "../utils/cloudinary";
+import { fetchPlatformSettings } from "../api/api";
 import {
   fetchVendorProducts,
   fetchVendorOrders,
@@ -25,6 +26,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
   const [reportData, setReportData] = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportRange, setReportRange] = useState({ startDate: "", endDate: "" });
+  const [adminNote, setAdminNote] = useState("");
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -65,6 +67,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
       })
       .catch(console.error);
 
+    fetchPlatformSettings().then(s => setAdminNote(s.adminNote || "")).catch(()=>{});
     fetchRefundRequests(currentUser._id)
       .then((data) => setRefunds(data.refunds || []))
       .catch(console.error);
@@ -245,6 +248,17 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
           </div>
         ))}
       </div>
+
+      {/* Admin Note Banner */}
+      {adminNote && (
+        <div style={{ margin: "0 32px 16px", background: "rgba(200,146,42,0.15)", border: "1px solid rgba(200,146,42,0.4)", borderRadius: 10, padding: "12px 20px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <span style={{ fontSize: 18 }}>📣</span>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Admin Notice</div>
+            <div style={{ fontSize: 14, color: "rgba(245,228,184,0.9)", lineHeight: 1.5 }}>{adminNote}</div>
+          </div>
+        </div>
+      )}
 
       {/* My Products Tab */}
       {activeTab === "myproducts" && (
@@ -777,7 +791,7 @@ function DashboardPage({ currentUser, onShowToast, WB_DISTRICTS }) {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: "rgba(200,146,42,0.15)" }}>
-                      {["Order ID","Customer","Amount","Method","Payment","Status","Date"].map((h) => (
+                      {["Order ID","Customer","Subtotal","Discount","GST","Plat.Fee","Delivery","Total","Method","Payment","Status","Date"].map((h) => (
                         <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "var(--gold)", fontWeight: 700 }}>{h}</th>
                       ))}
                     </tr>

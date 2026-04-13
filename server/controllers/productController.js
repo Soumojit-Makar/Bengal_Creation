@@ -264,5 +264,4 @@ module.exports = {
   getProductsByVendor,
   getProductByCategory,
   getProducs,
-  getSearchSuggestions,
 };

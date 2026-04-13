@@ -554,3 +554,45 @@ module.exports = {
   deleteCoupon,
   getRevenueReport,
 };
+
+// ─── Platform Settings ────────────────────────────────────────────────────────
+const PlatformSettings = require("../models/PlatformSettings");
+const { bustSettingsCache } = require("./orderController");
+
+const getPlatformSettings = async (req, res) => {
+  try {
+    let s = await PlatformSettings.findOne({ key: "global" });
+    if (!s) s = await PlatformSettings.create({ key: "global" });
+    res.json({ success: true, settings: s });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+const updatePlatformSettings = async (req, res) => {
+  try {
+    const allowed = [
+      "gstRate","gstEnabled",
+      "platformFeeRate","platformFeeEnabled","platformFeeLabel",
+      "deliveryCharge","deliveryChargeEnabled","freeDeliveryAbove",
+      "maxCouponDiscountPct","adminNote",
+    ];
+    const update = {};
+    allowed.forEach((k) => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
+
+    const s = await PlatformSettings.findOneAndUpdate(
+      { key: "global" },
+      { $set: update },
+      { new: true, upsert: true }
+    );
+    bustSettingsCache(); // invalidate in-process cache immediately
+    res.json({ success: true, settings: s });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+};
+
+// append to module.exports
+const existing = module.exports;
+existing.getPlatformSettings   = getPlatformSettings;
+existing.updatePlatformSettings = updatePlatformSettings;

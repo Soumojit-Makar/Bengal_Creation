@@ -1,60 +1,132 @@
 const mongoose = require("mongoose");
 const Order = require("../models/order");
-const Cart = require("../models/Cart");
+const Cart  = require("../models/Cart");
 const Product = require("../models/product");
 const Address = require("../models/address");
-require('dotenv').config();
+const PlatformSettings = require("../models/PlatformSettings");
+require("dotenv").config();
+
+// ── Helper: load platform settings (cached per process, refreshes every 5 min)
+let _settingsCache = null;
+let _settingsCacheAt = 0;
+async function getSettings() {
+  if (_settingsCache && Date.now() - _settingsCacheAt < 5 * 60 * 1000) return _settingsCache;
+  let s = await PlatformSettings.findOne({ key: "global" });
+  if (!s) s = await PlatformSettings.create({ key: "global" }); // seed defaults
+  _settingsCache = s;
+  _settingsCacheAt = Date.now();
+  return s;
+}
+// expose so super-admin controller can bust the cache
+const bustSettingsCache = () => { _settingsCache = null; };
+module.exports.bustSettingsCache = bustSettingsCache;
+
+// ── createOrder ────────────────────────────────────────────────────────────────
 const createOrder = async (req, res) => {
-  console.log(req.body);
-  const { addressId, user_id, PaymentMethod } = req.body;
-  console.log("USER ID:", user_id);
+  const { addressId, user_id, PaymentMethod, couponCode, discountAmount: clientDiscount } = req.body;
 
   const cart = await Cart.findOne({ customer: new mongoose.Types.ObjectId(user_id) });
-  if (!cart) {
-    console.log(cart);
-    return res.status(400).json({ msg: "Cart empty" });
-  }
-  console.log("CART FOUND:", cart);
+  if (!cart) return res.status(400).json({ msg: "Cart empty" });
 
   const address = await Address.findOne({
-    _id: new mongoose.Types.ObjectId(addressId),
+    _id:      new mongoose.Types.ObjectId(addressId),
     customer: new mongoose.Types.ObjectId(user_id),
   });
   if (!address) return res.status(404).json({ msg: "Address not found" });
 
-  // INVENTORY CHECK
+  // Inventory check & deduct
   for (const item of cart.items) {
     const product = await Product.findById(item.product);
     if (!product) return res.status(404).json({ msg: "Product not found" });
-    if (product.stock < item.quantity) {
-      console.log(product);
-      return res.status(400).json({ msg: product.name + " out of stock" });
-    }
+    if (product.stock < item.quantity) return res.status(400).json({ msg: product.name + " out of stock" });
     product.stock -= item.quantity;
     await product.save();
   }
 
-  const tax = Math.round(cart.totalAmount * 0.05);
-  const totalAmount = cart.totalAmount + tax;
+  const settings = await getSettings();
+
+  const subtotal       = cart.totalAmount;
+  const discountAmount = Math.min(Number(clientDiscount) || 0, subtotal);
+
+  // GST on (subtotal - discount)
+  const taxBase       = subtotal - discountAmount;
+  const gstAmount     = settings.gstEnabled
+    ? Math.round(taxBase * settings.gstRate / 100) : 0;
+
+  // Platform fee on subtotal (before discount — seller pays full commission)
+  const platformFeeAmount = settings.platformFeeEnabled
+    ? Math.round(subtotal * settings.platformFeeRate / 100) : 0;
+
+  // Delivery charge
+  let deliveryCharge = 0;
+  if (settings.deliveryChargeEnabled && settings.deliveryCharge > 0) {
+    const freeThreshold = settings.freeDeliveryAbove || 0;
+    deliveryCharge = (freeThreshold > 0 && subtotal >= freeThreshold) ? 0 : settings.deliveryCharge;
+  }
+
+  const totalAmount = taxBase + gstAmount + platformFeeAmount + deliveryCharge;
+
   const orderItems = cart.items.map((item) => ({
-    product: item.product,
-    vendor: item.vendorId,
+    product:  item.product,
+    vendor:   item.vendorId,
     quantity: item.quantity,
-    price: item.price,
+    price:    item.price,
   }));
 
   const order = new Order({
-    user: user_id,
-    items: orderItems,
-    address: addressId,
+    user:     user_id,
+    items:    orderItems,
+    address:  addressId,
+    subtotal,
+    gstRate:          settings.gstEnabled ? settings.gstRate : 0,
+    gstAmount,
+    platformFeeRate:  settings.platformFeeEnabled ? settings.platformFeeRate : 0,
+    platformFeeAmount,
+    deliveryCharge,
+    discountAmount,
+    couponCode:       couponCode || "",
     totalAmount,
-    paymentMethod: PaymentMethod,
+    paymentMethod:    PaymentMethod,
   });
 
   await order.save();
   await Cart.findOneAndDelete({ customer: user_id });
 
   res.json(order);
+};
+
+// ── getChargePreview (called before order creation to show breakdown) ──────────
+const getChargePreview = async (req, res) => {
+  try {
+    const { subtotal = 0, discountAmount = 0 } = req.query;
+    const settings = await getSettings();
+    const sub  = Number(subtotal);
+    const disc = Math.min(Number(discountAmount), sub);
+    const taxBase = sub - disc;
+
+    const gstAmount         = settings.gstEnabled ? Math.round(taxBase * settings.gstRate / 100) : 0;
+    const platformFeeAmount = settings.platformFeeEnabled ? Math.round(sub * settings.platformFeeRate / 100) : 0;
+
+    let deliveryCharge = 0;
+    if (settings.deliveryChargeEnabled && settings.deliveryCharge > 0) {
+      const freeThreshold = settings.freeDeliveryAbove || 0;
+      deliveryCharge = (freeThreshold > 0 && sub >= freeThreshold) ? 0 : settings.deliveryCharge;
+    }
+
+    res.json({
+      subtotal:           sub,
+      discountAmount:     disc,
+      gstRate:            settings.gstEnabled ? settings.gstRate : 0,
+      gstAmount,
+      platformFeeLabel:   settings.platformFeeLabel || "Platform Fee",
+      platformFeeRate:    settings.platformFeeEnabled ? settings.platformFeeRate : 0,
+      platformFeeAmount,
+      deliveryCharge,
+      total:              taxBase + gstAmount + platformFeeAmount + deliveryCharge,
+    });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 };
 
 const getOrdersByUser = async (req, res) => {
@@ -97,20 +169,12 @@ const getOrderById = async (req, res) => {
 };
 
 const updateOrderStatus = async (req, res) => {
-  const order = await Order.findByIdAndUpdate(
-    req.params.id,
-    { status: req.body.status },
-    { new: true }
-  );
+  const order = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
   res.json(order);
 };
 
 const updatePaymentStatus = async (req, res) => {
-  const order = await Order.findByIdAndUpdate(
-    req.params.id,
-    { paymentStatus: req.body.paymentStatus },
-    { new: true }
-  );
+  const order = await Order.findByIdAndUpdate(req.params.id, { paymentStatus: req.body.paymentStatus }, { new: true });
   res.json(order);
 };
 
@@ -132,6 +196,7 @@ const deleteOrder = async (req, res) => {
 
 module.exports = {
   createOrder,
+  getChargePreview,
   getOrdersByUser,
   getOrdersByStatus,
   getAllOrders,
