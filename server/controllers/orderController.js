@@ -55,7 +55,7 @@ const createOrder = async (req, res) => {
 
   // Platform fee on subtotal (before discount — seller pays full commission)
   const platformFeeAmount = settings.platformFeeEnabled
-    ? Math.round(subtotal * settings.platformFeeRate / 100) : 0;
+    ? Math.round(subtotal * settings.platformFeeRate ) : 0;
 
   // Delivery charge
   let deliveryCharge = 0;
