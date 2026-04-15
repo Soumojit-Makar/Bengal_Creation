@@ -19,7 +19,7 @@ const addToWishlist = async (req, res) => {
 };
 
 const getWishlist = async (req, res) => {
-  const wishlist = await Wishlist.findOne({ customer: req.user.id }).populate("products");
+  const wishlist = await Wishlist.findOne({ customer: req.body.userId }).populate("products");
   res.json(wishlist || { products: [] });
 };
 
@@ -34,5 +34,6 @@ const removeFromWishlist = async (req, res) => {
   await wishlist.save();
   res.json({ msg: "Removed from wishlist" });
 };
+
 
 module.exports = { addToWishlist, getWishlist, removeFromWishlist };

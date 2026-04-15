@@ -1,10 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 
+
 function WishlistPage({ wishlist, cart, onAddCart, onToggleWish, onClearWishlist, allProducts }) {
   const navigate = useNavigate();
   const items = allProducts.filter((p) => wishlist.includes(p.id));
-
+  // console.log("Wishlist", wishlist);
+  // console.log("items", items);
+  // console.log("cart", cart);
+  // console.log("allProducts", allProducts);
   return (
     <div className="bgabout">
       <div className="wishlist-header">
