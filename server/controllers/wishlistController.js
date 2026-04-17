@@ -8,11 +8,11 @@ const addToWishlist = async (req, res) => {
       return res.status(404).json({ msg: "Product not found" });
     }
 
-    let wishlist = await Wishlist.findOne({ customer: req.user.id });
+    let wishlist = await Wishlist.findOne({ customer: req.params.userId });
 
     if (!wishlist) {
       wishlist = new Wishlist({
-        customer: req.user.id,
+        customer: req.params.userId,
         products: [],
       });
     }
@@ -36,7 +36,7 @@ const addToWishlist = async (req, res) => {
 
 const getWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findOne({ customer: req.user.id }).populate("products");
+    const wishlist = await Wishlist.findOne({ customer: req.params.userId }).populate("products");
     res.json(wishlist || { products: [] });
   } catch (error) {
     console.error("Get wishlist error:", error);
@@ -46,7 +46,7 @@ const getWishlist = async (req, res) => {
 
 const removeFromWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findOne({ customer: req.user.id });
+    const wishlist = await Wishlist.findOne({ customer: req.params.userId });
 
     if (!wishlist) {
       return res.status(404).json({ msg: "Wishlist empty" });
