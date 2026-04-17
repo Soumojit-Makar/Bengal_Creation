@@ -34,17 +34,22 @@ const addToWishlist = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
-
 const getWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findOne({ customer: req.params.userId }).populate("products");
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({ msg: "userId is required" });
+    }
+
+    const wishlist = await Wishlist.findOne({ customer: userId }).populate("products");
+
     res.json(wishlist || { products: [] });
   } catch (error) {
     console.error("Get wishlist error:", error);
     res.status(500).json({ msg: "Server error" });
   }
 };
-
 const removeFromWishlist = async (req, res) => {
   try {
     const wishlist = await Wishlist.findOne({ customer: req.params.userId });

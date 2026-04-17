@@ -633,3 +633,21 @@ export const fetchWishlist = async (userId) => {
 
   return data?.items || [];
 };
+export const addToWishlist = async (productId, userId) => {
+  const res = await fetch(`${API}/wishlist/add/${productId}/user/${userId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to add to wishlist");
+  return data;
+}
+export const removeFromWishlist = async (productId, userId) => {
+  const res = await fetch(`${API}/wishlist/remove/${productId}/user/${userId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || "Failed to remove from wishlist");
+  return data;
+};
