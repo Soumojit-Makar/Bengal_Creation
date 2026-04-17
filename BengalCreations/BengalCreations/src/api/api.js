@@ -150,10 +150,21 @@ export const registerCustomer = async (customerData) => {
 };
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
+// export const fetchCart = async (userId) => {
+//   const res = await fetch(`${API}/cart/${userId}`);
+//   if (!res.ok) throw new Error("Failed to fetch cart");
+//   return res.json();
+// };
+
 export const fetchCart = async (userId) => {
   const res = await fetch(`${API}/cart/${userId}`);
   if (!res.ok) throw new Error("Failed to fetch cart");
-  return res.json();
+
+  const data = await res.json();
+  // console.log("Cart API response:", data);
+
+  // ✅ Handle all possible cases
+  return data?.items || data?.cart?.items || [];
 };
 
 export const addToCartAPI = async (productId, userId) => {
@@ -605,4 +616,20 @@ export const saUpdateSettings = async (token, body) => {
     body: JSON.stringify(body),
   });
   return res.json();
+};
+
+//─── Wishlist ─────────────────────────────────────────
+
+export const fetchWishlist = async (userId) => {
+  const res = await fetch(`${API}/wishlist/`,{
+    body:{
+      userId:userId
+    }
+  });
+  if (!res.ok) throw new Error("Failed to fetch wishlist");
+
+  const data = await res.json();
+  console.log("Wishlist:", data);
+
+  return data?.items || [];
 };
