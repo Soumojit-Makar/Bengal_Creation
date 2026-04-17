@@ -14,7 +14,7 @@ router.post("/add/:productId/user/:userId", addToWishlist);
   #swagger.responses[401] = { description: 'Unauthorized' }
 */
 
-router.get("/", getWishlist);
+router.get("/:userid", getWishlist);
 /*
   #swagger.tags = ['Wishlist']
   #swagger.summary = 'Get the authenticated customer wishlist'
