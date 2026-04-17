@@ -7,6 +7,7 @@ const addToWishlist = async (req, res) => {
     if (!product) {
       return res.status(404).json({ msg: "Product not found" });
     }
+    
 
     let wishlist = await Wishlist.findOne({ customer: req.params.userId });
 

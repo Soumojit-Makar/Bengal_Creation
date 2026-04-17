@@ -2,12 +2,13 @@ const express = require("express");
 const router = express.Router();
 const { addToWishlist, getWishlist, removeFromWishlist } = require("../controllers/wishlistController");
 
-router.post("/add/:productId", addToWishlist);
+router.post("/add/:productId/user/:userId", addToWishlist);
 /*
   #swagger.tags = ['Wishlist']
   #swagger.summary = 'Add a product to the wishlist'
   #swagger.security = [{ BearerAuth: [] }]
   #swagger.parameters['productId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.parameters['userId'] = { in: 'path', required: true, type: 'string' }
   #swagger.responses[200] = { description: 'Added to wishlist' }
   #swagger.responses[404] = { description: 'Product not found' }
   #swagger.responses[401] = { description: 'Unauthorized' }
@@ -22,12 +23,13 @@ router.get("/", getWishlist);
   #swagger.responses[401] = { description: 'Unauthorized' }
 */
 
-router.delete("/remove/:productId", removeFromWishlist);
+router.delete("/remove/:productId/user/:userId", removeFromWishlist);
 /*
   #swagger.tags = ['Wishlist']
   #swagger.summary = 'Remove a product from the wishlist'
   #swagger.security = [{ BearerAuth: [] }]
   #swagger.parameters['productId'] = { in: 'path', required: true, type: 'string' }
+  #swagger.parameters['userId'] = { in: 'path', required: true, type: 'string' }
   #swagger.responses[200] = { description: 'Removed from wishlist', schema: { msg: 'Removed from wishlist' } }
   #swagger.responses[404] = { description: 'Wishlist empty' }
 */
