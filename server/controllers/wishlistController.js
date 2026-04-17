@@ -5,7 +5,7 @@ const addToWishlist = async (req, res) => {
   const product = await Product.findById(req.params.productId);
   if (!product) return res.status(404).json({ msg: "Product not found" });
 
-  let wishlist = await Wishlist.findOne({ customer: req.user.id });
+  let wishlist = await Wishlist.findOne({ customer: req.params.userId });
   if (!wishlist) {
     wishlist = new Wishlist({ customer: req.user.id, products: [] });
   }
@@ -19,12 +19,12 @@ const addToWishlist = async (req, res) => {
 };
 
 const getWishlist = async (req, res) => {
-  const wishlist = await Wishlist.findOne({ customer: req.user.id }).populate("products");
+  const wishlist = await Wishlist.findOne({ customer: req.params.userId }).populate("products");
   res.json(wishlist || { products: [] });
 };
 
 const removeFromWishlist = async (req, res) => {
-  const wishlist = await Wishlist.findOne({ customer: req.user.id });
+  const wishlist = await Wishlist.findOne({ customer: req.params.userId  });
   if (!wishlist) return res.status(404).json({ msg: "Wishlist empty" });
 
   wishlist.products = wishlist.products.filter(
